@@ -1,0 +1,7 @@
+# This theme extends Material for MkDocs
+extends: material
+
+# Global configuration theme configuration.
+# Values under the `js` key, will be passed on to JavaScript.
+# `container_css` contains space separated CSS classes, also passed on to the HTML.
+nype_config: {}

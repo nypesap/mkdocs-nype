@@ -1,0 +1,2 @@
+mkdocs-material[imaging,recommended]==9.5.30
+mkdocs-macros-plugin==1.0.5

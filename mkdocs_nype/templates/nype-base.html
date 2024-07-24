@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block styles -%}
+    {{- super() -}}
+    {#- nype-main.css should come after material to allow for parent theme overrides.
+        The extra.css styles are loaded later, so nype-main.css can be overriden too. -#}
+    <link rel="stylesheet" href="{{ 'assets/stylesheets/nype-main.css' | url }}">
+{%- endblock %}
+
+{% block extrahead -%}
+    {#- Pass the config from the page meta to JavaScript with lowercase variables. Opt-in approach. -#}
+    {% set nype_config = { 'js': {}, 'container_css': '' } -%}
+    {% if config.theme.nype_config.js -%}
+        {% set _ = nype_config.js.update(config.theme.nype_config.js) -%}
+    {% endif -%}
+    {% if config.theme.nype_config.container_css -%}
+        {% set _ = nype_config.container_css.update(config.theme.nype_config.container_css) -%}
+    {% endif -%}
+    {% if page.meta and page.meta.nype_config and page.meta.nype_config.js -%}
+        {% for name, value in page.meta.nype_config.js.items() -%}
+            {%- set _ = nype_config.js.update({ name.lower(): value })-%}
+        {% endfor -%}
+    {% endif -%}
+    <script>
+        const nypeScriptConfig = JSON.parse('{{ nype_config.js | tojson }}');
+    </script>
+{%- endblock %}
+
+{% block header -%}
+    {#- Custom helper div to use for CSS selector in extra.css -#}    
+    {% if page and page.file.dest_uri == "index.html" -%}
+        {% set page_variant = 'nype-home-page' -%}
+    {%- elif posts -%}
+        {% set page_variant = 'nype-blog-page' -%}
+    {%- else -%}
+        {% set page_variant = 'nype-normal-page' -%}
+    {%- endif -%}
+
+    <style class="nype-header-styles {{ page_variant }}"></style>
+
+    {{- super() -}}
+
+    {#- Pass the config from the page meta to the CSS styles. Opt-in approach. -#}
+    {% set container_ns = namespace(css='') -%}
+    {% if page.meta and page.meta.nype_config and page.meta.nype_config.container_css -%}
+        {% for css_name in page.meta.nype_config.container_css.strip().split(' ') %}
+            {% set container_ns.css = container_ns.css ~ ' nype-' ~ css_name -%}
+        {% endfor %}
+    {% endif -%}
+
+    <style class="nype-container-styles{{ container_ns.css }}"></style>
+
+    {#- Update page.meta to hide side panels -#}
+    {% if 'content-only' in container_ns.css -%}
+        {% set _ = page.meta.update({ 'hide': ['navigation', 'toc']}) %}
+    {%- endif -%}
+{%- endblock %}
+
+{% block scripts -%}
+    {#- nype-core.js should come before extra.js in projects. In case nype-core.js needs access 
+        to material bundle.js then some solution will need to be implemented TODO -#}
+    <script src="{{ 'assets/javascripts/nype-core.js' | url }}"></script>
+    {{- super() -}}
+{% endblock %}

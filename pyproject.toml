@@ -1,0 +1,71 @@
+[build-system]
+requires = [
+    "hatchling",
+    "hatch-requirements-txt"
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "mkdocs-nype"
+version = "0.1.0"
+description = "MkDocs theme for Nype MkDocs projects, extends the Material for MkDocs theme"
+authors = [
+    { name = "Kamil Krzyśków", email = "kk@npe.cm" }
+]
+keywords = [
+    "mkdocs",
+    "nype",
+    "theme"
+]
+dynamic = [
+    "dependencies"
+]
+license-files = { paths = ["LICENSE"] }
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black~=24.4.2",
+    "isort~=5.13.2"
+]
+
+[project.urls]
+Source = "https://github.com/nypesap/mkdocs-nype"
+Issues = "https://github.com/nypesap/mkdocs-nype/issues"
+
+[project.entry-points."mkdocs.plugins"]
+# Custom Nype entry points
+"nype/sap_icons" = "mkdocs_nype.plugins.sap_icons.plugin:SapIconsPlugin"
+"nype/latest_blog_posts" = "mkdocs_nype.plugins.latest_blog_posts.plugin:LatestBlogPostsPlugin"
+"nype/custom_blog_categorization" = "mkdocs_nype.plugins.custom_blog_categorization.plugin:CustomBlogCategorizationPlugin"
+"nype/custom_redirects" = "mkdocs_nype.plugins.custom_redirects.plugin:CustomRedirectsPlugin"
+"nype/canonical_merge" = "mkdocs_nype.plugins.canonical_merge.plugin:CanonicalMergePlugin"
+"nype/only_blog_nav" = "mkdocs_nype.plugins.only_blog_nav.plugin:OnlyBlogNavPlugin"
+"nype/custom_social_logo" = "mkdocs_nype.plugins.custom_social_logo.plugin:CustomSocialLogoPlugin"
+"nype/unique_blog_date" = "mkdocs_nype.plugins.unique_blog_date.plugin:UniqueBlogDatePlugin"
+
+# Redefinition of Material for MkDocs entry points to allow for easier config transition
+# is currently not possible as some iternals expect the material/ prefix.
+# This issue is fixed in __init__.py
+
+[project.entry-points."mkdocs.themes"]
+nype = "mkdocs_nype.templates"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+filename = "requirements.txt"
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "/mkdocs_nype"
+]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.black]
+line-length = 100
