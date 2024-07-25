@@ -16,14 +16,14 @@ This theme extends the [Material for MkDocs] theme and adds custom modifications
 
 ## Used in
 
-- [Nype Brand Site][Nype]
-- [SAP Fiori Tracker]
-- [SAP Fiori App Usage]
-- [SAP Fiori Role Testing]
+- [Nype Brand Site][Nype] - Team of SAP UI5 developers with business-aware mindset
+- [Fiori Tracker] - Tool for tracking SAP Fiori launchpad applications
+- [Fiori App Usage] - Tool for collecting SAP Fiori application insights
+- [Fiori Role Testing] - Tool for spotting untested SAP Fiori apps
 
-[SAP Fiori Tracker]: https://fioritracker.org/?ref=theme
-[SAP Fiori App Usage]: https://help.fioriappsusage.org/?ref=theme
-[SAP Fiori Role Testing]: https://fioriroletesting.com/?ref=theme
+[Fiori Tracker]: https://fioritracker.org/?ref=theme
+[Fiori App Usage]: https://help.fioriappsusage.org/?ref=theme
+[Fiori Role Testing]: https://fioriroletesting.com/?ref=theme
 
 ## License
 
