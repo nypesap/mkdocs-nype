@@ -1,0 +1,64 @@
+{% extends "main.html" %}
+
+{# https://github.com/squidfunk/mkdocs-material/issues/7375 #}
+{% block htmltitle %}
+    <title>{{ config.site_name }} - 404</title>
+{% endblock %}
+
+{% block extrahead %}
+    {{ super() }}
+    <script>
+        (function() {
+            // Remove the first part after / and keep the rest + add an errorRef to avoid redirect chain
+            // So /V2020/inst/ will become /inst/?errorRef=/V2020/inst/
+            // Used in Fiori Tracker 
+            {% if nype_config.old_prefix -%}
+                const oldPrefix = "{{ nype_config.old_prefix }}";
+            {%- else -%}
+                const oldPrefix = undefined;
+            {%- endif %}
+
+            if (!oldPrefix) {
+                return;
+            }
+
+            const pagePrefix = window.location.pathname.split("/").slice(1, 2)[0];
+            const errorRef = new URLSearchParams(window.location.search).get("errorRef");
+            console.debug(pagePrefix);
+            
+            if (!errorRef && pagePrefix == oldPrefix) {
+                const nextRef = encodeURIComponent(window.location.pathname);
+                const nextSearch = window.location.search ? window.location.search + `&errorRef=${nextRef}` : `?errorRef=${nextRef}`;
+                const newPath = window.location.pathname.split("/").slice(2).join("/");
+                console.debug(newPath);
+                
+                window.location.replace([
+                    window.location.origin, 
+                    "/",
+                    newPath, 
+                    nextSearch, 
+                    window.location.hash
+                ].join(""));
+                
+            }
+        })();
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h1>404 - Not found</h1>
+    <script>
+        // Add information about the invalid redirect, so that the user is aware there was an URL change
+        (function() {
+            const errorRef = new URLSearchParams(window.location.search).get("errorRef");
+            if (!errorRef) {
+                return;
+            }
+            // Remove the errorRef if the page was successfully loaded after the JS redirect
+            window.history.replaceState({}, document.title, window.location.pathname);
+            const node = document.createTextNode(`Redirected from another 404 page: ${errorRef}`);
+            const article = document.querySelector(".md-content__inner");
+            article.appendChild(node);
+        })();
+    </script>
+{% endblock %}

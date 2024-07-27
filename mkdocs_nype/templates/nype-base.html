@@ -1,21 +1,32 @@
-{% extends "base.html" %}
+{% extends "base.html" -%}
+
+{# Define a nype_config dict for the current page, instead of working with the global reference -#}
+{# Defined in the outer scope to allow every block to access it -#}
+{% set nype_config = { 'js': {} } -%}
 
 {% block styles -%}
     {{- super() -}}
     {#- nype-main.css should come after material to allow for parent theme overrides.
-        The extra.css styles are loaded later, so nype-main.css can be overriden too. -#}
+        The extra.css styles are loaded later, so nype-main.css can be overridden too. -#}
     <link rel="stylesheet" href="{{ 'assets/stylesheets/nype-main.css' | url }}">
 {%- endblock %}
 
 {% block extrahead -%}
-    {#- Pass the config from the page meta to JavaScript with lowercase variables. Opt-in approach. -#}
-    {% set nype_config = { 'js': {}, 'container_css': '' } -%}
+    {#- Load global values into the local dict -#}
+    {% for name, value in config.theme.nype_config.items() -%}
+        {% if name != 'js' -%}
+            {% set _ = nype_config.update({ name: value }) -%}
+        {% endif -%}
+    {% endfor -%}
+
+    {#- Load JavaScript separately to create new memory references -#}
     {% if config.theme.nype_config.js -%}
-        {% set _ = nype_config.js.update(config.theme.nype_config.js) -%}
+        {% for name, value in config.theme.nype_config.js.items() -%}
+            {% set _ = nype_config.js.update({ name.lower(): value }) -%}
+        {% endfor -%}
     {% endif -%}
-    {% if config.theme.nype_config.container_css -%}
-        {% set _ = nype_config.container_css.update(config.theme.nype_config.container_css) -%}
-    {% endif -%}
+    
+    {#- Pass the config from the page meta to JavaScript with lowercase variables. Opt-in approach. -#}
     {% if page.meta and page.meta.nype_config and page.meta.nype_config.js -%}
         {% for name, value in page.meta.nype_config.js.items() -%}
             {%- set _ = nype_config.js.update({ name.lower(): value })-%}
