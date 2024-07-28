@@ -9,10 +9,20 @@ const _gNypeConvertHexToString = (hexData) => {
 };
 
 const _gNypeDisplayErrorInHTML = (errorMessage) => {
+    console.error(errorMessage);
     const el = document.createElement("div");
     el.style = "font-size: 1rem; color: red;";
     el.innerText = errorMessage;
     document.querySelector("article").insertAdjacentElement("afterbegin", el);
+};
+
+/**
+ * Send Google Tag events
+ */
+const _gNypeSendT = function() {
+    _gNypeDebug(...arguments);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(arguments); 
 };
 
 /**
@@ -42,11 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-
     if (contactFormSuccess) {
-        gtag("event", "sign_up_success");
+        _gNypeSendT("event", "sign_up_success");
         return;
     }
     
@@ -64,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!actionHex) {
             const errorMessage = "Contact form action is missing";
             _gNypeDisplayErrorInHTML(errorMessage)
-            console.error(errorMessage);
         }
 
         form.addEventListener("submit", (e) => {
@@ -74,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            gtag("event", "sign_up", { method: "Contact Form" });
+            _gNypeSendT("event", "sign_up", { method: "Contact Form" });
 
             if (!["127.0.0.1", "localhost"].includes(window.location.hostname)) {
                 form.action = _gNypeConvertHexToString(actionHex);
@@ -98,12 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!emailHex) {
             const errorMessage = "Contact show email value is missing";
             _gNypeDisplayErrorInHTML(errorMessage);
-            console.error(errorMessage);
         }
 
         showEmailToggle.addEventListener("click", (e) => {
             e.preventDefault();
-            gtag("event", "show_email");
+            _gNypeSendT("event", "show_email");
             const span = document.createElement("span");
             span.innerHTML = _gNypeConvertHexToString(emailHex);
             const anchor = span.querySelector("a");
