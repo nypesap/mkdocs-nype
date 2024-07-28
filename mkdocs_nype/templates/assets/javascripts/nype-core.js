@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const config = nypeScriptConfig;
     const contactForm = config["contact_form"];
-    const contactFormSuccess = config["contact_form_succes"];
+    const contactFormSuccess = config["contact_form_success"];
     _gNypeDebug("contactForm", contactForm);
     _gNypeDebug("contactFormSuccess", contactFormSuccess);
 

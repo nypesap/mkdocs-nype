@@ -21,6 +21,46 @@
 
 /* #endregion */
 
+/* #region Animated elements */
+
+:root > * {
+    --nype-pulse-primary-color: var(--md-primary-fg-color);
+    --nype-pulse-accent-color: var(--md-accent-fg-color);
+}
+
+@keyframes alert {
+    0% {
+        transform: rotate(0deg);
+        color: var(--nype-pulse-accent-color);
+    }
+
+    25% {
+        transform: rotate(-15deg) scale(1.5);
+        color: var(--nype-pulse-primary-color);
+    }
+
+    50% {
+        transform: rotate(0deg);
+        color: var(--nype-pulse-accent-color);
+    }
+
+    75% {
+        transform: rotate(15deg) scale(1.5);
+        color: var(--nype-pulse-primary-color);
+    }
+
+    100% {
+        transform: rotate(0deg);
+        color: var(--nype-pulse-accent-color);
+    }
+}
+
+.twemoji.nype-pulse {
+    animation: alert 2500ms infinite;
+}
+
+/* #endregion */
+
 /* #region Contact Us Form and related */
 
 /* For the nype-show-email button */
