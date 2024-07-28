@@ -2,7 +2,14 @@
 
 {# Define a nype_config dict for the current page, instead of working with the global reference -#}
 {# Defined in the outer scope to allow every block to access it -#}
-{% set nype_config = { 'js': {} } -%}
+{% set page_nype_config = { 'js': {} } -%}
+{% set theme_nype_config = config.theme.nype_config or {} -%}
+
+{# Set a shortform handle for the conditionals below #}
+{% set has_meta_config = page.meta and page.meta.nype_config -%}
+{% if has_meta_config -%}
+    {% set meta_config = page.meta.nype_config -%}
+{% endif -%}
 
 {% block styles -%}
     {{- super() -}}
@@ -12,28 +19,39 @@
 {%- endblock %}
 
 {% block extrahead -%}
-    {#- Load global values into the local dict -#}
-    {% for name, value in config.theme.nype_config.items() -%}
+    {#- Load global values into the local dict. Skip 'js' to not copy a reference -#}
+    {% for name, value in theme_nype_config.items() -%}
         {% if name != 'js' -%}
-            {% set _ = nype_config.update({ name: value }) -%}
+            {% set _ = page_nype_config.update({ name: value }) -%}
         {% endif -%}
     {% endfor -%}
 
     {#- Load JavaScript separately to create new memory references -#}
-    {% if config.theme.nype_config.js -%}
-        {% for name, value in config.theme.nype_config.js.items() -%}
-            {% set _ = nype_config.js.update({ name.lower(): value }) -%}
+    {% if theme_nype_config.js -%}
+        {% for name, value in theme_nype_config.js.items() -%}
+            {% set _ = page_nype_config.js.update({ name.lower(): value }) -%}
         {% endfor -%}
     {% endif -%}
+
+    {# Incldue global 'non-js' values in the js of the current page #}
+    {% if has_meta_config and meta_config.js_include -%}
+        {% for name in meta_config.js_include -%}
+            {% set value = page_nype_config.get(name.lower()) %}
+            {% if not value and {}.__getitem__('ERROR: The value for page_nype_config.' ~ name ~ ' is undefined') %}
+            {% endif %}
+            {% set _ = page_nype_config.js.update({ name.lower(): value })-%}
+        {% endfor -%}
+    {% endif %}
     
-    {#- Pass the config from the page meta to JavaScript with lowercase variables. Opt-in approach. -#}
-    {% if page.meta and page.meta.nype_config and page.meta.nype_config.js -%}
-        {% for name, value in page.meta.nype_config.js.items() -%}
-            {%- set _ = nype_config.js.update({ name.lower(): value })-%}
+    {#- Pass the config from the page meta to JavaScript with lowercase variables. 
+        Allows to override global values per page. -#}
+    {% if has_meta_config and meta_config.js -%}
+        {% for name, value in meta_config.js.items() -%}
+            {%- set _ = page_nype_config.js.update({ name.lower(): value })-%}
         {% endfor -%}
     {% endif -%}
     <script>
-        const nypeScriptConfig = JSON.parse('{{ nype_config.js | tojson }}');
+        const nypeScriptConfig = JSON.parse('{{ page_nype_config.js | tojson }}');
     </script>
 {%- endblock %}
 
@@ -53,8 +71,8 @@
 
     {#- Pass the config from the page meta to the CSS styles. Opt-in approach. -#}
     {% set container_ns = namespace(css='') -%}
-    {% if page.meta and page.meta.nype_config and page.meta.nype_config.container_css -%}
-        {% for css_name in page.meta.nype_config.container_css.strip().split(' ') %}
+    {% if has_meta_config and meta_config.container_css -%}
+        {% for css_name in meta_config.container_css.strip().split(' ') %}
             {% set container_ns.css = container_ns.css ~ ' nype-' ~ css_name -%}
         {% endfor %}
     {% endif -%}

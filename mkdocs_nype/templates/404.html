@@ -12,8 +12,9 @@
             // Remove the first part after / and keep the rest + add an errorRef to avoid redirect chain
             // So /V2020/inst/ will become /inst/?errorRef=/V2020/inst/
             // Used in Fiori Tracker 
-            {% if nype_config.old_prefix -%}
-                const oldPrefix = "{{ nype_config.old_prefix }}";
+            {#- page_nype_config is set in global scope of nype-base.html -#}
+            {% if page_nype_config.old_prefix -%}
+                const oldPrefix = "{{ page_nype_config.old_prefix }}";
             {%- else -%}
                 const oldPrefix = undefined;
             {%- endif %}

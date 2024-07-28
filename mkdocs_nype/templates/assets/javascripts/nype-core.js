@@ -42,7 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
     "use strict";
 
     const config = nypeScriptConfig;
-    const contactForm = config["contact_form"];
+    // Get form status based on the given options
+    const contactForm = !!config["contact_form"] || !!config["contact_form_action_hex"] || !!config["contact_form_email_hex"];
     const contactFormSuccess = config["contact_form_success"];
     _gNypeDebug("contactForm", contactForm);
     _gNypeDebug("contactFormSuccess", contactFormSuccess);
