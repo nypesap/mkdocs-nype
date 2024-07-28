@@ -3,15 +3,15 @@ extends: material
 
 # Global theme configuration. Can be updated in page.meta.nype_config per page.
 #
-# Supported settings (as of 0.4.0):
+# Supported settings (as of 0.5.0):
 # - `js` dict(str, Any) - values will be passed on to JavaScript.
-# - `container_css` str - space separated names of `nype-{name}` CSS style classes that will influence the container.
-# -> container_css: 'hide-h1 content-only'
+# - `old_prefix` str - for 404 page, old prefix to redirect old links from if not found
+# - `container_css` str - (white)space separated names of `nype-{name}` CSS style classes that will influence the container.
+#    container_css: 'hide-h1 content-only'
 # - `{key}` {value} - any key with any value, though deep dictionaries will likely not be recursively added.
-# -> - contact_form_action_hex: value
+#    contact_form_action_hex: value
 #
 # Additionally to global overrides pages can include:
-# - `js_include` list(str) - names of `non-js` keys that will be passed on to the `js` too.
-# -> - js_include:
-#       - contact_form_action_hex
+# - `js_include` list(str) - (white)space separated names of `non-js` keys that will be passed on to the `js` too.
+#    js_include: 'contact_form_action_hex contact_form_email_hex'
 nype_config: {}

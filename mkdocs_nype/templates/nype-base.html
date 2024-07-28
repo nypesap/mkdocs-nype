@@ -35,11 +35,12 @@
 
     {# Incldue global 'non-js' values in the js of the current page #}
     {% if has_meta_config and meta_config.js_include -%}
-        {% for name in meta_config.js_include -%}
-            {% set value = page_nype_config.get(name.lower()) %}
+        {% for name in meta_config.js_include.split() -%}
+            {% set name = name.lower() %}
+            {% set value = page_nype_config.get(name) %}
             {% if not value and {}.__getitem__('ERROR: The value for page_nype_config.' ~ name ~ ' is undefined') %}
             {% endif %}
-            {% set _ = page_nype_config.js.update({ name.lower(): value })-%}
+            {% set _ = page_nype_config.js.update({ name: value })-%}
         {% endfor -%}
     {% endif %}
     
@@ -72,7 +73,7 @@
     {#- Pass the config from the page meta to the CSS styles. Opt-in approach. -#}
     {% set container_ns = namespace(css='') -%}
     {% if has_meta_config and meta_config.container_css -%}
-        {% for css_name in meta_config.container_css.strip().split(' ') %}
+        {% for css_name in meta_config.container_css.strip().split() %}
             {% set container_ns.css = container_ns.css ~ ' nype-' ~ css_name -%}
         {% endfor %}
     {% endif -%}

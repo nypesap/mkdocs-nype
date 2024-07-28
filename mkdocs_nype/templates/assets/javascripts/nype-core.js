@@ -60,7 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const actionHex = config["contact_form_action_hex"];  // URL -> base64 -> HEX
     const emailHex = config["contact_form_email_hex"];  // HTML <a> with mailto: -> base64 -> HEX
-    const freeSubject = config["contact_form_free_subject"];
+    // Support legacy option free_subject
+    const freeSubject = config["contact_form_free_subject"] ?? config["contact_form_subject"];
     _gNypeDebug("actionHex", actionHex);
     _gNypeDebug("emailHex", emailHex);
     _gNypeDebug("freeSubject", freeSubject);
