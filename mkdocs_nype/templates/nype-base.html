@@ -11,12 +11,30 @@
     {% set meta_config = page.meta.nype_config -%}
 {% endif -%}
 
+{% block site_meta -%}
+    {{- super() -}}
+    {% block nype_favicon -%}
+        {# Based on https://dev.to/masakudamatsu/favicon-nightmare-how-to-maintain-sanity-3al7 #}
+        {% if theme_nype_config.more_favicons -%}
+            <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+            <link rel="manifest" href="/site.webmanifest">
+            {% if theme_nype_config.safari_mask_color %}
+            <link rel="mask-icon" href="/safari-pinned-tab.svg" color="{{ theme_nype_config.safari_mask_color }}">
+            {% endif %}
+        {%- endif %}
+    {%- endblock -%}
+    {% block nype_robots -%}
+        <meta property="robots" content="index, follow">
+    {%- endblock %}
+{%- endblock -%}
+
 {% block styles -%}
     {{- super() -}}
     {#- nype-main.css should come after material to allow for parent theme overrides.
         The extra.css styles are loaded later, so nype-main.css can be overridden too. -#}
     <link rel="stylesheet" href="{{ 'assets/stylesheets/nype-main.css' | url }}">
-{%- endblock %}
+{%- endblock -%}
 
 {% block extrahead -%}
     {#- Load global values into the local dict. Skip 'js' to not copy a reference -#}
@@ -54,7 +72,7 @@
     <script>
         const nypeScriptConfig = JSON.parse('{{ page_nype_config.js | tojson }}');
     </script>
-{%- endblock %}
+{%- endblock -%}
 
 {% block header -%}
     {#- Custom helper div to use for CSS selector in extra.css -#}    
