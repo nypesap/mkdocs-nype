@@ -34,7 +34,7 @@ class CustomCallToActionSectionsPlugin(BasePlugin[CustomCallToActionSectionsConf
             self.sanitized_paths.append(sanitize_path(path))
             LOG.debug(f"Added prefix: {self.sanitized_paths[-1]}")
 
-        self.sanitized_target = sanitize_path(self.config.section_target)
+        self.sanitized_target = sanitize_path(self.config.target)
 
         LOG.info("Sanitized paths and target")
 
@@ -56,15 +56,15 @@ class CustomCallToActionSectionsPlugin(BasePlugin[CustomCallToActionSectionsConf
         ).as_posix()
 
         section_template = ""
-        if self.config.section_type == "title_and_cta":
+        if self.config.variant == "title_and_cta":
             section_template = TITLE_AND_CTA_TEMPLATE
         else:
-            LOG.error(f"Not supported setting {self.config.section_type=}")
+            LOG.error(f"Not supported setting {self.config.variant=}")
 
         section = section_template.format(
-            section_title=self.config.section_title,
-            section_cta=self.config.section_cta,
-            section_target=relative_target,
+            title=self.config.title,
+            cta=self.config.cta,
+            target=relative_target,
         )
 
         if self.config.append_at == "end":
@@ -92,8 +92,8 @@ LOG: PrefixedLogger = PrefixedLogger(
 TITLE_AND_CTA_TEMPLATE: str = (
     """
 <div class="nype-cta" markdown>
-<div class="nype-cta-title" markdown>{section_title}</div>
-<div class="nype-cta-description" markdown>[{section_cta}]({section_target})</div>
+<div class="nype-cta-title" markdown>{title}</div>
+<div class="nype-cta-description" markdown>[{cta}]({target})</div>
 </div>
 """.strip()
 )
