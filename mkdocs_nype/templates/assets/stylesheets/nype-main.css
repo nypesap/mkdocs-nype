@@ -138,3 +138,27 @@
 }
 
 /* #endregion */
+
+/* #region CTA Sections - custom_cta_sections */
+
+.nype-cta {
+    font-size: 1rem;
+    margin: 1rem auto;
+    text-align: center;
+    width: 50%;
+}
+
+.nype-cta-title {
+    font-weight: 700;
+    margin: 1em auto;
+}
+
+.nype-cta-description:hover .twemoji {
+    animation: alert 2500ms infinite;
+}
+
+.nype-cta p {
+    margin: unset;
+}
+
+/* #endregion */
