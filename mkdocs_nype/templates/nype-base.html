@@ -1,5 +1,10 @@
 {% extends "base.html" -%}
 
+{# Fallback for setting the is_serve status #}
+{% if config.theme.is_serve is none %}
+    {% set _ = config.theme.update({ 'is_serve': config.site_url.split('//')[1].split(':')[0] in ['127.0.0.1', 'localhost'] }) %}
+{% endif%}
+
 {# Define a nype_config dict for the current page, instead of working with the global reference -#}
 {# Defined in the outer scope to allow every block to access it -#}
 {% set page_nype_config = { 'js': {} } -%}

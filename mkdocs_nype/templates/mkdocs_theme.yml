@@ -3,7 +3,7 @@ extends: material
 
 # Global theme configuration. Can be updated in page.meta.nype_config per page.
 #
-# Supported settings (as of 0.6.0):
+# Supported settings:
 # - `js` dict(str, Any) - values will be passed on to JavaScript.
 # - `{key}` {value} - any key with any value, though deep dictionaries will likely not be recursively added.
 #    contact_form_action_hex: value
@@ -17,3 +17,6 @@ extends: material
 # - `css_include`: str- (white)space separated names of CSS files that will be included before nype-main.css and project extra.css
 #    css_include: 'neoteroi'
 nype_config: {}
+
+# Global container for local serve status, can be set in mkdocs.yml, but there is a fallback in nype-base.html
+is_serve:

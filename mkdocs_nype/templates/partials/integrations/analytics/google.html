@@ -1,0 +1,110 @@
+{#-
+Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+-#}
+{#-
+Copied from Material for MkDocs version 9.5.30 and customized for Nype.
+-#}
+
+{# Determine analytics property #}
+{% if config.extra.analytics %}
+    {% set property = config.extra.analytics.property | d("", true) %}
+{% endif %}
+
+{# When using mkdocs serve use debug mode  #}
+{% set debug_flag = '' %}
+{% set gtm_base = config.site_url.rstrip("/") ~ "/" %}
+{% if config.theme.is_serve -%}
+    {% set gtm_base = 'http://nype.debug/' -%}
+    {% set debug_flag = ', { "debug_mode": true }' %}
+{% endif %}
+
+{# Integrate with Google Analytics 4 #}
+<script id="__analytics">
+    function __md_analytics() {
+        window.dataLayer = window.dataLayer || [];
+        function pe() { dataLayer.push(arguments); }
+
+        /* Set up integration and send page view */
+        pe("js", new Date());
+
+        pe("config", "{{ property }}"{{ debug_flag }});
+
+        /* Register event handlers after documented loaded */
+        document.addEventListener("DOMContentLoaded", function () {
+
+            /* Set up search tracking */
+            if (document.forms.search) {
+                let query = document.forms.search.query;
+                query.addEventListener("blur", function () {
+                    if (this.value)
+                        pe("event", "search", { search_term: this.value });
+                })
+            }
+
+            /* Set up feedback, i.e. "Was this page helpful?" */
+            document$.subscribe(function () {
+                let feedback = document.forms.feedback;
+                if (typeof feedback === "undefined")
+                    return;
+
+                /* Send feedback to Google Analytics */
+                for (let button of feedback.querySelectorAll("[type=submit]")) {
+                    button.addEventListener("click", function (ev) {
+                        ev.preventDefault();
+
+                        /* Retrieve and send data */
+                        let page = document.location.pathname;
+                        let data = this.getAttribute("data-md-value");
+                        pe("event", "feedback", { page, data });
+
+                        /* Disable form and show note, if given */
+                        feedback.firstElementChild.disabled = true;
+                        let note = feedback.querySelector(
+                            ".md-feedback__note [data-md-value='" + data + "']"
+                        );
+                        if (note)
+                            note.hidden = false;
+                    })
+
+                    /* Show feedback */
+                    feedback.hidden = false;
+                }
+            })
+
+            /* Send page view on location change */
+            location$.subscribe(function (url) {
+                pe("config", "{{ property }}", {
+                    page_path: url.pathname
+                });
+            });
+        });
+
+        /* Create script tag */
+        let script = document.createElement("script");
+        script.async = true;
+        script.defer = true;
+        script.src = "{{ gtm_base }}ggl-tm/js?id={{ property }}";
+
+        /* Inject script tag */
+        let container = document.getElementById("__analytics");
+        container.insertAdjacentElement("afterEnd", script);
+    }
+</script>
