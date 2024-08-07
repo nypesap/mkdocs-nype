@@ -31,7 +31,21 @@
 
 {% block styles -%}
     {{- super() -}}
-    {#- nype-main.css should come after material to allow for parent theme overrides.
+    {# This is done like this to support minifaction in __main__.py #}
+    {% set available_css = {
+        'neoteroi': 'assets/stylesheets/neoteroi.css' | url
+    } %}
+    {# Include additional CSS based on the page settings #}
+    {% if has_meta_config and meta_config.css_include -%}
+        {% for name in meta_config.css_include.split() -%}
+            {% set name = name.lower() %}
+            {% set value = available_css.get(name) %}
+            {% if not value and {}.__getitem__('ERROR: The value for available_css.' ~ name ~ ' is undefined') %}
+            {% endif %}
+            <link rel="stylesheet" href="{{ value }}">
+        {% endfor %}
+    {% endif %}
+    {#- nype-main.css should come after mkdocs-material and all other CSS modules to allow for overrides.
         The extra.css styles are loaded later, so nype-main.css can be overridden too. -#}
     <link rel="stylesheet" href="{{ 'assets/stylesheets/nype-main.css' | url }}">
 {%- endblock -%}

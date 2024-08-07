@@ -14,4 +14,6 @@ extends: material
 #    container_css: 'hide-h1 content-only'
 # - `js_include` str - (white)space separated names of `non-js` keys that will be passed on to the `js` too.
 #    js_include: 'contact_form_action_hex contact_form_email_hex'
+# - `css_include`: str- (white)space separated names of CSS files that will be included before nype-main.css and project extra.css
+#    css_include: 'neoteroi'
 nype_config: {}
