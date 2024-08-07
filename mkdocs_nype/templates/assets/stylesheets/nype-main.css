@@ -173,4 +173,20 @@
     color: var(--md-default-fg-color--light);
 }
 
+.compact-timeline :is(.nt-timeline-title, .nt-timeline-sub-title) {
+    font-size: inherit;
+}
+
+.compact-timeline .nt-timeline-title {
+    font-weight: 700;
+}
+
+.compact-timeline .nt-timeline-item {
+    padding-bottom: unset;
+}
+
+.compact-timeline .nt-timeline-content {
+    padding-bottom: .6rem;
+}
+
 /* #endregion */
