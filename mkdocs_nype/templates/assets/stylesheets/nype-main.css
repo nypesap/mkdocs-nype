@@ -173,12 +173,33 @@
     color: var(--md-default-fg-color--light);
 }
 
+/* Align colors more with material */
+
+.nt-timeline-dot {
+    background-color: var(--md-typeset-a-color) !important;
+}
+
+.nt-timeline.vertical.center .nt-timeline-before {
+    background: linear-gradient(rgba(255, 255, 255, 0) 0%, rgb(150, 150, 150) 90%) no-repeat center/2px 100%;
+}
+
+.nt-timeline.vertical.center .nt-timeline-items {
+    background: radial-gradient(circle, rgb(150, 150, 150) 0%, rgb(150, 150, 150) 100%) no-repeat center/2px 100%;
+}
+
+.nt-timeline.vertical.center .nt-timeline-after {
+    background: linear-gradient(rgb(150, 150, 150) 0%, rgba(255, 255, 255, 0) 50%) no-repeat center/2px 100%;
+}
+
+/* Compact timeline layout with smaller gaps between items */
+
 .compact-timeline :is(.nt-timeline-title, .nt-timeline-sub-title) {
     font-size: inherit;
 }
 
 .compact-timeline .nt-timeline-title {
     font-weight: 700;
+    margin-bottom: unset;
 }
 
 .compact-timeline .nt-timeline-item {
@@ -186,7 +207,9 @@
 }
 
 .compact-timeline .nt-timeline-content {
-    padding-bottom: .6rem;
+    padding-bottom: unset;
+    margin-top: unset;
+    margin-bottom: unset;
 }
 
 /* #endregion */

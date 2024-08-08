@@ -2,6 +2,8 @@
  *  All CSS for the neoteroi-mkdocs extensions.
  *
  *  Version 1.0.4-1.0.5
+ *  Was copied as-is.
+ *  Some unused colors are commented out, but customization is done in nype-main.css
  *
  *  https://github.com/Neoteroi/mkdocs-plugins
 **/
@@ -58,7 +60,7 @@
   --nt-color-49: #556B2F;
   --nt-color-50: #778899;
   --nt-color-51: #E6E6FA;
-  --nt-color-52: #FFFAFA;
+  /* --nt-color-52: #FFFAFA;
   --nt-color-53: #FF7F50;
   --nt-color-54: #FF0000;
   --nt-color-55: #F5DEB3;
@@ -143,7 +145,7 @@
   --nt-color-134: #FF8C00;
   --nt-color-135: #EEE8AA;
   --nt-color-136: #CD5C5C;
-  --nt-color-137: #DC143C;
+  --nt-color-137: #DC143C; */
 }
 
 :root {
