@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
             span.innerHTML = _gNypeConvertHexToString(emailHex);
             const anchor = span.querySelector("a");
             if (anchor && freeSubject) {
-                anchor.href = anchor.href.split("subject=")[0] + `subject=${freeSubject}`;
+                anchor.href = anchor.href.split("?subject=")[0] + `?subject=${freeSubject}`;
             }
             showEmailToggle.replaceWith(span);
         });
