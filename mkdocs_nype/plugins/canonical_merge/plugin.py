@@ -7,9 +7,10 @@ It expects the default `site` directory as source for the other files.
 It also adjusts canonical URL values of pages.
 
 NOTE:
-- It works in unison with the prepare_structure.py CI workflow script. Currently it's not included
-  in the theme, but can be accessed here:
-  - https://github.com/fioritracker/fioritracker.github.io/blob/main/.github/scripts/prepare_structure.py
+- Nype's ssage of this plugin was discontinued with this commit:
+  - https://github.com/Fiori-Tracker/fioritracker.github.io/commit/49cde2fd15d426f6cfc539b48b3c4c39d1e586d1
+- It works in unison with the prepare_structure.py CI workflow script that needs to be run in CI separately:
+  - https://github.com/nypesap/mkdocs-nype/tree/main/mkdocs_nype/plugins/canonical_merge/ci/prepare_structure.py
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm) and Fiori Tracker (fioritracker.org)
 """
