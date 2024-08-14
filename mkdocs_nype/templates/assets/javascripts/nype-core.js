@@ -1,4 +1,4 @@
-const _gNypeDebug = function() {
+const _gNypeDebug = function () {
     if (["127.0.0.1", "localhost"].includes(window.location.hostname)) {
         console.debug("Nype Debug:", arguments);
     }
@@ -19,10 +19,10 @@ const _gNypeDisplayErrorInHTML = (errorMessage) => {
 /**
  * Send Google Tag events
  */
-const _gNypeSendT = function() {
+const _gNypeSendT = function () {
     _gNypeDebug(...arguments);
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(arguments); 
+    window.dataLayer.push(arguments);
 };
 
 /**
@@ -57,22 +57,81 @@ document.addEventListener("DOMContentLoaded", () => {
         _gNypeSendT("event", "sign_up_success");
         return;
     }
-    
+
     const actionHex = config["contact_form_action_hex"];  // URL -> base64 -> HEX
     const emailHex = config["contact_form_email_hex"];  // HTML <a> with mailto: -> base64 -> HEX
+    const allowPersonalEmails = config["contact_form_allow_personal_emails"];
     // Support legacy option free_subject
     const freeSubject = config["contact_form_free_subject"] ?? config["contact_form_subject"];
     _gNypeDebug("actionHex", actionHex);
     _gNypeDebug("emailHex", emailHex);
     _gNypeDebug("freeSubject", freeSubject);
-    
+
     const form = document.querySelector(".nype-form");
 
     if (form) {
 
+        // Use Set instead of Array for faster lookup?
+        const blockedEmailDomains = new Set([
+            "gmail.com", "googlemail.com", "yahoo.com", "yahoo.co.uk", "yahoo.fr", "yahoo.in",
+            "yahoo.ca", "yahoo.com.au", "yahoo.it", "yahoo.de", "yahoo.be", "yahoo.at",
+            "hotmail.com", "hotmail.co.uk", "hotmail.fr", "hotmail.it", "hotmail.de", "hotmail.nl",
+            "hotmail.be", "hotmail.ca", "hotmail.at", "hotmail.pl", "outlook.com", "outlook.co.uk",
+            "outlook.fr", "outlook.it", "outlook.de", "outlook.nl", "outlook.be", "outlook.ca",
+            "outlook.at", "outlook.pl", "icloud.com", "aol.com", "live.com", "live.co.uk", "live.fr",
+            "live.nl", "live.ca", "live.de", "live.it", "live.be", "live.at", "live.in", "msn.com",
+            "mail.com", "yandex.com", "qq.com", "163.com", "126.com", "sina.com", "sina.cn", "aliyun.com",
+            "web.de", "gmx.de", "freenet.de", "t-online.de", "btinternet.com", "sky.com",
+            "virginmedia.com", "laposte.net", "orange.fr", "free.fr", "sfr.fr", "bbox.fr",
+            "rediffmail.com", "sify.com", "in.com", "wp.pl", "o2.pl", "interia.pl", "onet.pl",
+            "tlen.pl", "bell.net", "rogers.com", "sympatico.ca", "shaw.ca", "bigpond.com",
+            "optusnet.com.au", "aapt.net.au", "internode.on.net", "tiscali.it", "libero.it",
+            "virgilio.it", "tin.it", "alice.it", "kpnmail.nl", "ziggo.nl", "planet.nl", "tiscali.be",
+            "skynet.be", "gmx.at", "aon.at", "chello.at"
+        ]);
+
+        // Probably not needed in the function scope, as the user doesn't have access to the variable anyway?
+        blockedEmailDomains.add = undefined;
+        blockedEmailDomains.delete = undefined;
+        Object.freeze(blockedEmailDomains);
+
         if (!actionHex) {
-            const errorMessage = "Contact form action is missing";
-            _gNypeDisplayErrorInHTML(errorMessage)
+            _gNypeDisplayErrorInHTML("Contact form action is missing");
+        }
+
+        const email = form.querySelector('[type="email"]');
+
+        // E-mail validation
+        if (email && !allowPersonalEmails) {
+            email.addEventListener("input", (e) => {
+                const parts = email.value.trim().split("@");
+                if (parts.length != 2 || !parts[1]) {
+                    return;
+                }
+                const domain = parts[1];
+                let errorSpan = form.querySelector(".email-error");
+                if (blockedEmailDomains.has(domain)) {
+                    const errorMessage = `Please provide a @company.domain e-mail instead of the personal @${domain} e-mail`;
+                    email.setCustomValidity(errorMessage);
+                    email.reportValidity();
+                    if (!errorSpan) {
+                        errorSpan = document.createElement("span");
+                        errorSpan.className = "email-error";
+                        errorSpan.style = "color: red; font-weight: 700; font-size: .7rem; display: block;";
+                        email.insertAdjacentElement("afterend", errorSpan);
+                    }
+                    errorSpan.innerText = errorMessage;
+                } else {
+                    email.setCustomValidity("");
+                    if (errorSpan) {
+                        errorSpan.remove();
+                    }
+                }
+            });
+            // Invoke the function to validate input after page refresh
+            if (email.value) {
+                email.dispatchEvent(new Event("input", {}));
+            }
         }
 
         form.addEventListener("submit", (e) => {
@@ -104,8 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (showEmailToggle) {
 
         if (!emailHex) {
-            const errorMessage = "Contact show email value is missing";
-            _gNypeDisplayErrorInHTML(errorMessage);
+            _gNypeDisplayErrorInHTML("Contact show email value is missing");
         }
 
         showEmailToggle.addEventListener("click", (e) => {
