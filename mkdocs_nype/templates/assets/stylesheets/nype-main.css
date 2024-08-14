@@ -213,3 +213,88 @@
 }
 
 /* #endregion */
+
+/* #region FAQ Details */
+
+:root {
+    /* https://sap.github.io/ui5-webcomponents/icons/ */
+    --nype-admonition-icon--faq: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0q53 0 99.5 20T437 75t55 81.5 20 99.5-20 99.5-55 81.5-81.5 55-99.5 20-99.5-20T75 437t-55-81.5T0 256t20-99.5T75 75t81.5-55T256 0zm0 461q42 0 79.5-16.5T401 400t44-65 16-79-16.5-79.5T400 111t-65-44-79-16-79.5 16.5T111 112t-44 65-16 79 16.5 79.5T112 401t65 44 79 16zm0-109q14 0 23 9t9 23-9 23-23 9-23-9-9-23 9-23 23-9zm0-256q40 0 68 28t28 68q0 33-20 58.5T282 285v9q0 11-7.5 18.5T256 320t-18.5-7.5T230 294v-32q0-11 8-18t21-7q17 0 29.5-13t12.5-32-13-32-32-13-32 12.5-13 29.5q0 13-7 21t-18 8-18.5-9-7.5-26 7.5-32.5T188 123t30.5-19.5T256 96z"></path></svg>');
+    --nype-admonition-border-color--faq: var(--md-primary-fg-color);
+}
+
+.md-typeset .admonition.faq,
+.md-typeset details.faq {
+    border-color: var(--nype-admonition-border-color--faq);
+    border-radius: unset;
+    margin: unset;
+    font-size: inherit;
+}
+
+.md-typeset .admonition:nth-child(1 of .faq),
+.md-typeset details:nth-child(1 of .faq) {
+    border-radius: .5rem .5rem 0 0;
+    border-bottom: unset;
+}
+
+.md-typeset .admonition:nth-last-child(-n+1 of .faq),
+.md-typeset details:nth-last-child(-n+1 of .faq) {
+    border-radius: 0 0 .5rem .5rem;
+    border-top: unset;
+}
+
+.md-typeset .admonition.faq,
+.md-typeset details.faq {
+    border-color: var(--nype-admonition-border-color--faq);
+    border-radius: unset;
+    margin: unset;
+}
+
+.md-typeset .faq > .admonition-title,
+.md-typeset .faq > summary {
+    background-color: unset;
+    border-radius: unset;
+    font-size: inherit;
+}
+
+.md-typeset details:not([open]) > summary {
+    border-radius: unset;
+}
+
+.md-typeset details[open],
+.md-typeset details[open] > summary {
+    background-color: var(--md-default-fg-color--lightest);
+}
+
+.md-typeset .admonition:nth-child(1 of .faq) > .admonition-title,
+.md-typeset details:nth-child(1 of .faq) > summary {
+    border-radius: .4rem .4rem 0 0;
+}
+
+.md-typeset .admonition:nth-last-child(-n+1 of .faq) > .admonition-title,
+.md-typeset details:nth-last-child(-n+1 of .faq) > summary {
+    border-radius: 0 0 .4rem .4rem;
+}
+
+.md-typeset details[open]:nth-last-child(-n+1 of .faq) > summary {
+    border-radius: unset;
+}
+
+.md-typeset .faq > .admonition-title:hover,
+.md-typeset details:not([open]).faq > summary:hover {
+    /* background-color: var(--md-primary-fg-color); */
+    background-color: var(--md-default-fg-color--lightest);
+}
+
+.md-typeset .faq > .admonition-title::before,
+.md-typeset .faq > summary::before {
+    background-color: var(--md-accent-fg-color);
+    -webkit-mask-image: var(--nype-admonition-icon--faq);
+    mask-image: var(--nype-admonition-icon--faq);
+}
+
+.md-typeset .admonition:focus-within, 
+.md-typeset details:focus-within {
+    box-shadow: unset;
+}
+
+/* #endregion */

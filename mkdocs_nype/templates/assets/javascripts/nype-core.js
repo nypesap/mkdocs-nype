@@ -179,3 +179,40 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+/**
+ * Handle FAQ Details processing
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    "use strict";
+
+    const faqDetails = document.querySelectorAll("details.faq");
+
+    if (!faqDetails) {
+        return;
+    }
+
+    const eventHandler = (e) => {
+        e.preventDefault();
+        const el = e.target;
+
+        if (el.tagName !== "SUMMARY") {
+            return;
+        }
+
+        const details = el.closest("details");
+
+        if (details.open === false) {
+            for (const faq of faqDetails) {
+                faq.open = faq === details;
+            }
+        } else {
+            details.open = false;
+        }
+    };
+
+    for (const faq of faqDetails) {
+        faq.addEventListener("click", eventHandler);
+    }
+
+});
