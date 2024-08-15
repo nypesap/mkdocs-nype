@@ -225,35 +225,33 @@
 .md-typeset .admonition.faq,
 .md-typeset details.faq {
     border-color: var(--nype-admonition-border-color--faq);
+}
+
+.md-typeset details.faq {
     border-radius: unset;
     margin: unset;
     font-size: inherit;
 }
 
-.md-typeset .admonition:nth-child(1 of .faq),
-.md-typeset details:nth-child(1 of .faq) {
-    border-radius: .5rem .5rem 0 0;
+.md-typeset .admonition.faq {
+    border-radius: .5rem;
+}
+
+.md-typeset details.faq:not(:last-child) {
     border-bottom: unset;
 }
 
-.md-typeset .admonition:nth-last-child(-n+1 of .faq),
-.md-typeset details:nth-last-child(-n+1 of .faq) {
+.md-typeset details.faq:first-child {
+    border-radius: .5rem .5rem 0 0;
+}
+
+.md-typeset details.faq:last-child {
     border-radius: 0 0 .5rem .5rem;
-    border-top: unset;
 }
 
-.md-typeset .admonition.faq,
-.md-typeset details.faq {
-    border-color: var(--nype-admonition-border-color--faq);
-    border-radius: unset;
-    margin: unset;
-}
-
-.md-typeset .faq > .admonition-title,
 .md-typeset .faq > summary {
     background-color: unset;
     border-radius: unset;
-    font-size: inherit;
 }
 
 .md-typeset details:not([open]) > summary {
@@ -265,23 +263,19 @@
     background-color: var(--md-default-fg-color--lightest);
 }
 
-.md-typeset .admonition:nth-child(1 of .faq) > .admonition-title,
-.md-typeset details:nth-child(1 of .faq) > summary {
+.md-typeset details.faq:first-child > summary {
     border-radius: .4rem .4rem 0 0;
 }
 
-.md-typeset .admonition:nth-last-child(-n+1 of .faq) > .admonition-title,
-.md-typeset details:nth-last-child(-n+1 of .faq) > summary {
+.md-typeset details.faq:last-child > summary {
     border-radius: 0 0 .4rem .4rem;
 }
 
-.md-typeset details[open]:nth-last-child(-n+1 of .faq) > summary {
+.md-typeset details[open].faq:last-child > summary {
     border-radius: unset;
 }
 
-.md-typeset .faq > .admonition-title:hover,
 .md-typeset details:not([open]).faq > summary:hover {
-    /* background-color: var(--md-primary-fg-color); */
     background-color: var(--md-default-fg-color--lightest);
 }
 
@@ -292,8 +286,7 @@
     mask-image: var(--nype-admonition-icon--faq);
 }
 
-.md-typeset .admonition:focus-within, 
-.md-typeset details:focus-within {
+.md-typeset details.faq:focus-within {
     box-shadow: unset;
 }
 
