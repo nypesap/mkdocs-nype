@@ -250,6 +250,12 @@ CSS_TEMLATE: str = (
     color: var(--md-default-fg-color--light);
     display: block;
 }
+.grid.cards ul {
+    list-style: none;
+}
+.grid.cards ul li {
+    margin-left: 0;
+}
 """.strip()
 )
 
