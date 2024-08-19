@@ -7,11 +7,10 @@ It should be run in the root of the project.
 MIT Licence 2024 Kamil Krzyśków (HRY) for Nype (npe.cm) and Fiori Tracker (fioritracker.org)
 """
 
-from pathlib import Path
 import re
 import shutil
 import sys
-
+from pathlib import Path
 
 NEW_DOCS = "docs_for_deploy"
 """Name of the new docs directory"""
