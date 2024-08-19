@@ -63,7 +63,7 @@ class UniqueBlogDatePlugin(BasePlugin[UniqueBlogDateConfig]):
             return
 
         def custom_date_filter(date):
-            return _format_date(date, "yyyy MMMM", config)
+            return _format_date(date, self.config.date_format, config)
 
         self.custom_filter_ref = custom_date_filter
         self.blog_filter_ref = env.filters["date"]
