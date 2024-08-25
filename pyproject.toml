@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mkdocs-nype"
-version = "0.12.3"
+version = "0.13.0"
 description = "MkDocs theme for Nype MkDocs projects, extends the Material for MkDocs theme"
 authors = [
     { name = "Kamil Krzyśków", email = "kk@npe.cm" }
@@ -48,6 +48,7 @@ Issues = "https://github.com/nypesap/mkdocs-nype/issues"
 "nype/custom_social_logo" = "mkdocs_nype.plugins.custom_social_logo.plugin:CustomSocialLogoPlugin"
 "nype/unique_blog_date" = "mkdocs_nype.plugins.unique_blog_date.plugin:UniqueBlogDatePlugin"
 "nype/custom_cta_sections" = "mkdocs_nype.plugins.custom_cta_sections.plugin:CustomCallToActionSectionsPlugin"
+"nype/custom_auto_links" = "mkdocs_nype.plugins.custom_auto_links.plugin:CustomAutoLinksPlugin"
 
 # Redefinition of Material for MkDocs entry points to allow for easier config transition
 # is currently not possible as some iternals expect the material/ prefix.
