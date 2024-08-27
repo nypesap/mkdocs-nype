@@ -8,7 +8,7 @@ Due to how themename/pluginname namespaces work to make using Nype projects more
 we change the logic of how namespaces are resolved. `pluginname` will be resolved in order:
 -> `nype/pluginname` -> `material/pluginname` -> `pluginname`
 
-run_validation_with_nype_injection:
+run_validation_with_nype_injection patch:
 Instead of manually setting and enabling a plugin, every project would benefit from an
 automatically enabled plugin at runtime that does some kind of validation during the event
 loop, or enable any recommended plugin markdown extension in each project.
@@ -19,14 +19,22 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 import hashlib
 import inspect
 import logging
+import re
 from collections import Counter
 
 import mkdocs
 from mkdocs.config.base import ValidationError
 from mkdocs.config.config_options import Plugins
 from mkdocs.plugins import PrefixedLogger
+from mkdocs.utils import CountHandler
 
 LOG: PrefixedLogger = PrefixedLogger("mkdocs_nype", logging.getLogger(f"mkdocs.themes.mkdocs_nype"))
+
+issue_counter = CountHandler()
+"""This is fetched in nype_tweaks to trigger --strict flag based on __init__.py"""
+
+issue_counter.setLevel(logging.WARNING)
+LOG.logger.addHandler(issue_counter)
 
 
 def patch_plugin_loading():
@@ -37,13 +45,7 @@ def patch_plugin_loading():
         )
         return
 
-    source = inspect.getsource(Plugins.load_plugin_with_namespace)
-
-    # Remove comments, spaces, turn lowercase to get a minified token
-    token = "".join(
-        map(lambda line: "".join(line.split("#")[0].split(" ")), source.strip().lower().split("\n"))
-    )
-    checksum = hashlib.sha256(token.encode(encoding="utf-8")).hexdigest()
+    checksum = _get_checksum(inspect.getsource(Plugins.load_plugin_with_namespace))
     working = "3f62dfaf6be408fd756b9ad17ce0ffaa32a17edbdcd3841358f73e80a63ccbb2"
 
     if checksum != working:
@@ -87,13 +89,7 @@ def patch_default_plugins_auto_load():
         )
         return
 
-    source = inspect.getsource(Plugins.run_validation)
-
-    # Remove comments, spaces, turn lowercase to get a minified token
-    token = "".join(
-        map(lambda line: "".join(line.split("#")[0].split(" ")), source.strip().lower().split("\n"))
-    )
-    checksum = hashlib.sha256(token.encode(encoding="utf-8")).hexdigest()
+    checksum = _get_checksum(inspect.getsource(Plugins.run_validation))
     working = "67a796e20054cbea416d9e596b657e4f0437dee5790636fc4de90a8d4baa4996"
 
     if checksum != working:
@@ -141,6 +137,22 @@ def run_validation(self, value: object) -> mkdocs.plugins.PluginCollection:
         self.load_plugin_with_namespace(name, cfg)
 
     return self.plugins
+
+
+def _get_checksum(source: str) -> str:
+    """Remove comments, spaces, turn lowercase to get a minified token and return a sha256 hash from it"""
+    token = re.sub(
+        pattern=r'""".*?"""',
+        repl="",
+        string="".join(
+            map(
+                lambda line: "".join(line.split("#")[0].split(" ")),
+                source.strip().lower().split("\n"),
+            )
+        ),
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+    return hashlib.sha256(token.encode(encoding="utf-8")).hexdigest()
 
 
 if __name__ == "mkdocs_nype":
