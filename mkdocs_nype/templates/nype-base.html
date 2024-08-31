@@ -16,6 +16,11 @@
     {% set meta_config = page.meta.nype_config -%}
 {% endif -%}
 
+{# Add special debug values for local testing #}
+{% if config.theme.is_serve -%}
+    {% set _ = page_nype_config.js.update({ 'debug_form_hex': '6148523063484d364c79396d62334a74637935316269317a6447463061574d75593239744c325a76636d317a4c7a4a694e3251785a6a6b785a6a677a4f546b7a4d7a55774e6a6732595755324d6d51314d544a6b597a59325a6a5179595467314d6d593d' }) %}
+{% endif %}
+
 {% block site_meta -%}
     {{- super() -}}
     {% block nype_favicon -%}

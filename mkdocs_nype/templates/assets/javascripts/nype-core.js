@@ -145,7 +145,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!["127.0.0.1", "localhost"].includes(window.location.hostname)) {
                 form.action = _gNypeConvertHexToString(actionHex);
+            } else if (config["debug_form_hex"]) {
+                form.action = _gNypeConvertHexToString(config["debug_form_hex"]);
             }
+
+            const hrefElement = document.createElement("input");
+            hrefElement.hidden = "true";
+            hrefElement.name = "href";
+            hrefElement.type = "text";
+            hrefElement.value = window.location.href;
+            form.insertAdjacentElement("afterbegin", hrefElement);
 
             form.submit();
         });
