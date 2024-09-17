@@ -33,5 +33,8 @@ class SimilarBlogPostsConfig(Config):
     similarity_threshold = Type(float, default=0.32)
     """Float number between 0 and 1 to decide if the posts should be considered similar"""
 
+    allow_other_categories = Type(bool, default=True)
+    """If a given category doesn't have enough (max_shown) similar posts, show posts from other categories"""
+
     max_shown = Type(int, default=5)
     """Limit the number of shown posts"""

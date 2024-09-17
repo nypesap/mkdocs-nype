@@ -1,4 +1,5 @@
 import logging
+import random
 from pathlib import Path
 
 from material.plugins.blog.plugin import BlogPlugin
@@ -67,17 +68,28 @@ class SimilarBlogPostsPlugin(BasePlugin[SimilarBlogPostsConfig]):
 
         set_a = set(categories_self)
         similar_posts: list[Page, float] = []
+        other_posts: list[Page, float] = []
         processed_post_ids = set()  # Track duplicates between categories
 
         # Find similar posts
         for view in blog_instance.blog.views:
+            # Skip non-category views
+            if not isinstance(view, Category):
+                continue
+
             # Skip categories not related to current post
-            if not isinstance(view, Category) or view.name not in set_a:
+            if not self.config.allow_other_categories and view.name not in set_a:
                 continue
 
             for post in view.posts:
                 # Skip self and processed
                 if post is page or id(post) in processed_post_ids:
+                    continue
+
+                # Skip calculating score for categories that do not match
+                if self.config.allow_other_categories and view.name not in set_a:
+                    other_posts.append((post, 0))
+                    processed_post_ids.add(id(post))
                     continue
 
                 categories_other = post.meta.get("categories")
@@ -86,19 +98,34 @@ class SimilarBlogPostsPlugin(BasePlugin[SimilarBlogPostsConfig]):
 
                 if score >= self.config.similarity_threshold:
                     similar_posts.append((post, score))
+                elif self.config.allow_other_categories:
+                    other_posts.append((post, score))
 
                 processed_post_ids.add(id(post))
 
         # Early return if no similar posts were found
-        if not similar_posts:
+        if not similar_posts and not other_posts:
             return
 
         # Sort posts based on score from highest to lowest
         similar_posts = sorted(similar_posts, key=lambda p: -p[1])
 
         # Limit the result to max_shown
-        if self.config.max_shown > 0:
+        if self.config.max_shown > 0 and len(similar_posts) > self.config.max_shown:
             similar_posts = similar_posts[: self.config.max_shown]
+
+        # Randomize other_posts a bit to avoid padding all the posts with the same other_posts
+        # Use seed to have somewhat constant results across different rebuilds, but also keep it unique to the post
+        if len(similar_posts) < self.config.max_shown and other_posts:
+            random.Random(str(page.meta["date"])).shuffle(other_posts)
+
+        # Pad the missing links with posts from other categories
+        while len(similar_posts) < self.config.max_shown and other_posts:
+
+            if not self.config.allow_other_categories:
+                break
+
+            similar_posts.append(other_posts.pop())
 
         posts_md = ""
         current_path = Path(page.file.abs_src_path).parent
