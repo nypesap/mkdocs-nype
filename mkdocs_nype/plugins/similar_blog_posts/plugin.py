@@ -86,12 +86,6 @@ class SimilarBlogPostsPlugin(BasePlugin[SimilarBlogPostsConfig]):
                 if post is page or id(post) in processed_post_ids:
                     continue
 
-                # Skip calculating score for categories that do not match
-                if self.config.allow_other_categories and view.name not in set_a:
-                    other_posts.append((post, 0))
-                    processed_post_ids.add(id(post))
-                    continue
-
                 categories_other = post.meta.get("categories")
                 set_b = set(categories_other)
                 score = self.weighted_jaccard_similarity(set_a, set_b)
@@ -163,6 +157,9 @@ class SimilarBlogPostsPlugin(BasePlugin[SimilarBlogPostsConfig]):
 
         # Calculate the top part of the equation
         numerator = len(set_a.intersection(set_b))
+
+        if numerator == 0:
+            return 0
 
         # Use weights to handle small vs big sets a bit better
         if use_weights:
