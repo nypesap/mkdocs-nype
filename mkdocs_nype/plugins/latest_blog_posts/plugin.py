@@ -44,6 +44,10 @@ class LatestBlogPostsPlugin(BasePlugin[LatestBlogPostsConfig]):
         if page.file.src_uri != "index.md":
             return
 
+        # awesome-pages-plugin
+        if config.nav is None:
+            return
+
         self.exec_count[page.file.src_uri] = self.exec_count.get(page.file.src_uri, 0) + 1
 
         lines = markdown.split("\n")
