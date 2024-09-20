@@ -14,6 +14,14 @@
     }
 }
 
+/* Wide content */
+@media screen and (min-width: 30rem) {
+    .nype-wide-content + .md-container .md-content {
+        max-width: 60rem;
+        margin: auto;
+    }
+}
+
 /* Overall better text formatting */
 .nype-justify + .md-container .md-content {
     text-align: justify;
