@@ -10,14 +10,26 @@ jobs:
   style-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout Dev
+        uses: actions/checkout@v4
+      - name: Checkout Main
+        run: git clone --depth 1 https://github.com/nypesap/mkdocs-nype.git main-branch
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
           python-version: 3
           cache: pip
-      - run: pip install isort black
-      - run: isort mkdocs_nype/ --check
-      - run: black mkdocs_nype/ --check
+      - name: Install style-check deps
+        run: pip install isort black
+      - name: Run style-check tests
+        run: |
+          isort mkdocs_nype/ --check
+          black mkdocs_nype/ --check
+      - name: Check package version when contents change
+        if: "hashFiles('mkdocs_nype') != hashFiles('main-branch/mkdocs_nype')"
+        run: |
+          wget -O main_pyproject.toml https://raw.githubusercontent.com/nypesap/mkdocs-nype/refs/heads/main/pyproject.toml
+          python .github/scripts/compare_pyproject.py --dev-toml pyproject.toml --main-toml main_pyproject.toml
   check-repos:
     needs: style-check
     runs-on: ubuntu-latest
@@ -31,3 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: echo "${{ matrix.repo }}"
+  after-repos:
+    needs: check-repos
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Success"
