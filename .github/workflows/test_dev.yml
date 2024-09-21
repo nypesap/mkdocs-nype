@@ -6,6 +6,9 @@ on:
       - dev
   workflow_dispatch: {}
 
+env:
+  CI: true
+
 jobs:
   style-check:
     runs-on: ubuntu-latest
@@ -30,19 +33,76 @@ jobs:
         run: |
           wget -O main_pyproject.toml https://raw.githubusercontent.com/nypesap/mkdocs-nype/refs/heads/main/pyproject.toml
           python .github/scripts/compare_pyproject.py --dev-toml pyproject.toml --main-toml main_pyproject.toml
-  check-repos:
+  cache-init:
     needs: style-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Dev
+        uses: actions/checkout@v4
+      - name: Install Python
+        id: install-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3
+          cache: pip
+      - name: Process Python Cache
+        id: cache-requirements
+        uses: actions/cache@v4
+        with:
+          path: venv
+          key: requirements-${{ steps.install-python.outputs.python-version }}-${{ hashFiles('requirements*.txt', 'pyproject*.toml') }}
+      - name: Install Uncached Requirements
+        if: steps.cache-requirements.outputs.cache-hit != 'true'
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install .
+  check-repos:
+    needs: cache-init
     runs-on: ubuntu-latest
     strategy:
       matrix:
         repo:
-          - https://github.com/nypesap/nypesap.github.io.git
-          - https://github.com/Fiori-Tracker/fioritracker.github.io.git
-          - https://github.com/fioriappsusage/fioriappsusage.github.io.git
-          - https://github.com/fioriroletesting/fioriroletesting.github.io.git
+          - name: Nype Brand Site
+            key: npe
+            url: https://github.com/nypesap/nypesap.github.io.git
+          - name: Fiori Tracker
+            key: ft
+            url: https://github.com/Fiori-Tracker/fioritracker.github.io.git
+          - name: Fiori App Usage
+            key: fau
+            url: https://github.com/fioriappsusage/fioriappsusage.github.io.git
+          - name: Fiori Role Testing
+            key: frt
+            url: https://github.com/fioriroletesting/fioriroletesting.github.io.git
     steps:
-      - uses: actions/checkout@v4
-      - run: echo "${{ matrix.repo }}"
+      - name: Checkout Repo
+        run: git clone --depth 1 ${{ matrix.repo.url }} .
+      - name: Checkout Dev
+        run: git clone --depth 1 --branch dev --single-branch https://github.com/nypesap/mkdocs-nype.git
+      - name: Install Python
+        id: install-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3
+          cache: pip
+      - name: Process Python Cache
+        id: cache-requirements
+        uses: actions/cache@v4
+        with:
+          path: venv
+          key: requirements-${{ steps.install-python.outputs.python-version }}-${{ hashFiles('mkdocs-nype/requirements*.txt', 'mkdocs-nype/pyproject*.toml') }}
+      - name: Crate cache file to avoid empty cache
+        run: mkdir -p .cache; echo mkdocs-material > .cache/safe
+      - uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ matrix.repo.key }}-${{ hashfiles('.cache/**') }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+      - run: venv/bin/python -m mkdocs_nype --minify --inject-minified
+      - run: venv/bin/python -m mkdocs build --strict
   after-repos:
     needs: check-repos
     runs-on: ubuntu-latest
