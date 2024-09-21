@@ -12,19 +12,29 @@ When the --strict flag is used, warnings from the theme __init__.py were ignored
 This tweak fixes it. TODO There is probably a better way, because if nype_tweaks 
 won't run automatically, due to an error, then this tweak will not be applied.
 
+3. Extend macros includes directory tweak:
+mkdocs-macros-plugin only allows to set one directory for includes. However, the
+Jinja2.loaders.FileSystemLoader supports a list of paths, so override the macros
+plugin reference to FileSystemLoader.
+
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
 import logging
+import sys
 
 import material
 from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.livereload import LiveReloadServer
 from mkdocs.plugins import BasePlugin, CombinedEvent, PrefixedLogger, event_priority
 from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 from mkdocs.utils import CountHandler
+from mkdocs_macros import plugin as macros_module
 
+from ...utils import MACROS_INCLUDES_ROOT
 from .config import NypeTweaksConfig
+from .utils import get_file_system_loader
 
 # region Core Logic Events
 
@@ -40,8 +50,6 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
 
         self.dest_url_mapping.clear()
 
-        LOG.info("Tweaks initialized")
-
         # Theme __init__.py issue count handler tweak
         if config.strict:
             theme_counts = {}
@@ -52,6 +60,11 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                 if isinstance(handler, CountHandler):
                     for level, count in theme_counts.items():
                         handler.counts[level] += count
+
+        # Extend macros includes directory tweak
+        macros_module.FileSystemLoader = get_file_system_loader
+
+        LOG.info("Tweaks initialized")
 
     @event_priority(-100)
     def on_post_page(self, output: str, /, *, page: Page, config: MkDocsConfig) -> str | None:
@@ -88,6 +101,13 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                         tag["name"] = "image"
 
     on_page_markdown = CombinedEvent(_on_page_markdown_social_meta)
+
+    def on_serve(
+        self, server: LiveReloadServer, /, *, config: MkDocsConfig, builder
+    ) -> LiveReloadServer | None:
+
+        if "--watch-theme" in sys.argv:
+            server.watch(str(MACROS_INCLUDES_ROOT))
 
 
 # endregion
