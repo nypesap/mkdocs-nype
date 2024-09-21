@@ -1,0 +1,33 @@
+name: test-dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch: {}
+
+jobs:
+  style-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3
+          cache: pip
+      - run: pip install isort black
+      - run: isort mkdocs_nype/ --check
+      - run: black mkdocs_nype/ --check
+  check-repos:
+    needs: style-check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo:
+          - https://github.com/nypesap/nypesap.github.io.git
+          - https://github.com/Fiori-Tracker/fioritracker.github.io.git
+          - https://github.com/fioriappsusage/fioriappsusage.github.io.git
+          - https://github.com/fioriroletesting/fioriroletesting.github.io.git
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "${{ matrix.repo }}"
