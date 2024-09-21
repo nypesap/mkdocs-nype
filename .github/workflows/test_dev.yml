@@ -76,6 +76,7 @@ jobs:
           - name: Fiori Role Testing
             key: frt
             url: https://github.com/fioriroletesting/fioriroletesting.github.io.git
+    name: check ${{ matrix.repo.name }}
     steps:
       - name: Checkout Repo
         run: git clone --depth 1 ${{ matrix.repo.url }} .
@@ -89,7 +90,7 @@ jobs:
           cache: pip
       - name: Process Python Cache
         id: cache-requirements
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: venv
           key: requirements-${{ steps.install-python.outputs.python-version }}-${{ hashFiles('mkdocs-nype/requirements*.txt', 'mkdocs-nype/pyproject*.toml') }}
