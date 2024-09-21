@@ -17,8 +17,10 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 
 import logging
 
+import material
 from mkdocs.config.defaults import MkDocsConfig
-from mkdocs.plugins import BasePlugin, PrefixedLogger, event_priority
+from mkdocs.plugins import BasePlugin, CombinedEvent, PrefixedLogger, event_priority
+from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 from mkdocs.utils import CountHandler
 
@@ -62,6 +64,30 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
             )
         else:
             self.dest_url_mapping[page.file.dest_uri] = page.file.src_uri
+
+    @event_priority(-25)
+    def _on_page_markdown_social_meta(
+        self, markdown: str, /, *, page: Page, config: MkDocsConfig, files: Files
+    ) -> str | None:
+        """Run after community version Social plugin"""
+
+        if "insiders" in material.__version__:
+            return
+
+        meta = page.meta.get("meta")
+
+        if not meta:
+            return
+
+        for tag in meta:
+            for attr, value in list(tag.items()):
+                if attr == "property":
+                    if value == "og:title":
+                        tag["name"] = "title"
+                    if value == "og:image":
+                        tag["name"] = "image"
+
+    on_page_markdown = CombinedEvent(_on_page_markdown_social_meta)
 
 
 # endregion
