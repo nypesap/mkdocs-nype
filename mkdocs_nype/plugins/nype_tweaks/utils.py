@@ -5,6 +5,13 @@ from jinja2.loaders import FileSystemLoader
 from ...utils import MACROS_INCLUDES_ROOT
 
 
+class ServeMode:
+    """Helps to track if serve runs again"""
+
+    run_once = False
+    """Toggle"""
+
+
 def get_file_system_loader(value: str | list[str]):
     """Proxy function to get the Jinja2 FileSystemLoader with theme macros_includes"""
 

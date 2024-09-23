@@ -1,5 +1,10 @@
 {% extends "base.html" -%}
 
+{# The nype_tweaks does some config.theme value modification / validation. Best to force the usage. #}
+{% if "nype/nype_tweaks" not in config.plugins %}
+    {% if {}.__getitem__('ERROR: The nype_tweaks plugin is required to run the nype theme. Please enable it in mkdocs.yml') %}{% endif %}
+{% endif %}
+
 {# Fallback for setting the is_serve status #}
 {% if config.theme.is_serve is none %}
     {% set _ = config.theme.update({ 'is_serve': config.site_url.split('//')[1].split(':')[0] in ['127.0.0.1', 'localhost'] }) %}

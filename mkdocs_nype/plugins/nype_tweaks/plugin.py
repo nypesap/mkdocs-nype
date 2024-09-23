@@ -34,7 +34,7 @@ from mkdocs_macros import plugin as macros_module
 
 from ...utils import MACROS_INCLUDES_ROOT
 from .config import NypeTweaksConfig
-from .utils import get_file_system_loader
+from .utils import ServeMode, get_file_system_loader
 
 # region Core Logic Events
 
@@ -62,7 +62,8 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                         handler.counts[level] += count
 
         # Extend macros includes directory tweak
-        macros_module.FileSystemLoader = get_file_system_loader
+        if not ServeMode.run_once:
+            macros_module.FileSystemLoader = get_file_system_loader
 
         LOG.info("Tweaks initialized")
 
@@ -108,6 +109,8 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
 
         if "--watch-theme" in sys.argv:
             server.watch(str(MACROS_INCLUDES_ROOT))
+
+        ServeMode.run_once = True
 
 
 # endregion
