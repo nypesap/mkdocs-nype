@@ -225,3 +225,128 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+/**
+ * Handle Discord invite processing
+ */
+document.addEventListener("DOMContentLoaded", async () => {
+    "use strict";
+
+    const config = nypeScriptConfig;
+    const inviteUrl = config["discord_invite"];
+    const inviteElement = document.querySelector(".nype-discord-invite");
+
+    if (inviteElement && !inviteUrl) {
+        _gNypeDisplayErrorInHTML("Invite link is missing");
+    } else if (!inviteUrl || !inviteElement) {
+        return;
+    }
+
+    const loadingIndicator = inviteElement.querySelector(".nype-discord-invite-loading")
+    const inviteId = inviteUrl.split("/").pop();
+    const cacheKey = `__discord-${inviteId}`;
+    const jsonUrl = `https://discord.com/api/v9/invites/${inviteId}?with_counts=true`
+
+    let data = __md_get(cacheKey, sessionStorage) ?? {};
+
+    if (Object.keys(data).length === 0 && data.constructor === Object) {
+        try {
+            const response = await fetch(jsonUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP status: ${response.status}`);
+            }
+            data = await response.json();
+        } catch (error) {
+            _gNypeDebug(error);
+            loadingIndicator.innerHTML = `Error while loading :( <br>Please use the direct link <a href="${inviteUrl}">${inviteUrl}</a>`;
+        }
+    }
+
+    _gNypeDebug(data);
+
+    if (Object.keys(data).length === 0 && data.constructor === Object) {
+        return;
+    }
+
+    let renderData = {};
+
+    // Transform and extract only needed data
+    if (data["guild_id"]) {
+
+        const inviter = data["inviter"] ?? {};
+
+        const rawUsername = inviter["username"] ?? "gregmal";
+        const globalUsername = inviter["global_name"] ?? "Greg";
+
+        const server = data["guild"] ?? {};
+
+        const serverId = server["id"];
+        const serverIcon = server["icon"];
+        let serverIconUrl;
+        const serverName = server["name"] ?? "Nype";
+        const serverDescription = server["description"];
+
+        if (serverId && serverIcon) {
+            serverIconUrl = `https://cdn.discordapp.com/icons/${serverId}/${serverIcon}.webp`;
+        } else {
+            serverIconUrl = "/assets/social_logo.png";
+        }
+
+        const onlineCount = data["approximate_presence_count"] ?? 0;
+        const memberCount = data["approximate_member_count"] ?? 0;
+
+        renderData["raw_username"] = rawUsername;
+        renderData["global_username"] = globalUsername;
+        renderData["server_icon_url"] = serverIconUrl;
+        renderData["server_name"] = serverName;
+        renderData["server_description"] = serverDescription;
+        renderData["online_count"] = onlineCount;
+        renderData["member_count"] = memberCount;
+
+        data = renderData;
+    } else {
+        renderData = data;
+    }
+
+    const titleAnchor = document.createElement("a");
+    titleAnchor.href = inviteUrl;
+    titleAnchor.innerText = renderData["server_name"] + " Discord Server";
+
+    const buttonAnchor = document.createElement("a");
+    buttonAnchor.href = inviteUrl;
+
+    const logoImage = document.createElement("img");
+    logoImage.alt = "Discord Server Logo";
+    logoImage.src = renderData["server_icon_url"];
+
+    const headerElement = document.querySelector(".nype-discord-invite-header");
+    const logoElement = document.querySelector(".nype-discord-invite-logo");
+    const titleElement = document.querySelector(".nype-discord-invite-title");
+    const onlineMembersElement = document.querySelector(".nype-discord-invite-stats .online-members");
+    const allMembersElement = document.querySelector(".nype-discord-invite-stats .all-members");
+    const buttonElement = document.querySelector(".nype-discord-invite-join");
+
+    if (!headerElement.innerText.trim()) {
+        headerElement.innerText = `${renderData["global_username"]} (${renderData["raw_username"]}) invites you to join`;
+    }
+    if (!logoElement.innerHTML.trim()) {
+        logoElement.insertAdjacentElement("afterbegin", logoImage);
+    }
+    if (!titleElement.innerHTML.trim()) {
+        titleElement.insertAdjacentElement("afterbegin", titleAnchor);
+    }
+    if (!onlineMembersElement.innerHTML.trim()) {
+        onlineMembersElement.innerText = renderData["online_count"];
+    }
+    if (!allMembersElement.innerHTML.trim()) {
+        allMembersElement.innerText = renderData["member_count"];
+    }
+    if (!buttonElement.innerHTML.trim()) {
+        buttonElement.insertAdjacentElement("beforebegin", buttonAnchor);
+        buttonAnchor.insertAdjacentElement("afterbegin", buttonElement);
+    }
+
+    __md_set(cacheKey, renderData, sessionStorage);
+    inviteElement.classList.remove("not-loaded");
+
+});

@@ -299,3 +299,101 @@
 }
 
 /* #endregion */
+
+/* #region Discord Invite */
+
+:root {
+    --nype-discord-invite-default: #248046;
+    --nype-discord-invite-hover: #1A6334;
+    --nype-discord-online-circle: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2"/></svg>');
+}
+
+.nype-discord-invite {
+    outline: .2em solid var(--md-default-fg-color--lightest);
+    border-radius: .5em;
+    margin: 0 auto;
+    padding: 1em;
+    width: 80%;
+}
+
+.nype-discord-invite-loading {
+    display: none;
+}
+
+.nype-discord-invite-header {
+    font-weight: 700;
+    font-size: .75em;
+    margin: 0;
+}
+
+.nype-discord-invite-logo {
+    text-align: center;
+}
+
+.nype-discord-invite-title {
+    font-weight: 700;
+    font-size: 1.25em;
+    text-align: center;
+}
+
+.nype-discord-invite-title > a {
+    color: unset;
+}
+
+.nype-discord-invite-title > a:hover {
+    color: unset;
+}
+
+.nype-discord-invite-title:hover {
+    text-decoration: underline;
+}
+
+.nype-discord-invite-stats {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.nype-discord-invite-stats > span::before {
+    display: inline-block;
+    content: "";
+    width: .7em;
+    height: .7em;
+    margin: 0 .1em 0 0;
+    -webkit-mask-image: var(--nype-discord-online-circle);
+    mask-image: var(--nype-discord-online-circle);
+}
+
+.nype-discord-invite-stats > .online-members::before {
+    background-color: var(--nype-discord-invite-default);
+}
+
+.nype-discord-invite-stats > .all-members::before {
+    background-color: gray;
+}
+
+.md-typeset .nype-discord-invite-join {
+    width: 100%;
+    background-color: var(--nype-discord-invite-default);
+    border-color: var(--nype-discord-invite-default);
+}
+
+.md-typeset .nype-discord-invite-join:hover {
+    background-color: var(--nype-discord-invite-hover);
+    border-color: var(--nype-discord-invite-hover);
+}
+
+.not-loaded :is(
+    .nype-discord-invite-header,
+    .nype-discord-invite-logo,
+    .nype-discord-invite-title, 
+    .nype-discord-invite-stats, 
+    .nype-discord-invite-join
+) {
+    display: none;
+}
+
+.not-loaded .nype-discord-invite-loading {
+    display: block;
+}
+
+/* #endregion */
