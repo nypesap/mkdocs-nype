@@ -84,7 +84,7 @@
     {% if has_meta_config -%}
         {% for name, value in meta_config.items() -%}
             {% if name != 'js' -%}
-                {% set _ = page_nype_config.update({ name: value }) -%}
+                {% set _ = page_nype_config.update({ name.lower(): value }) -%}
             {% endif -%}
         {% endfor -%}
     {% endif -%}
@@ -96,7 +96,7 @@
             {% set value = page_nype_config.get(name) %}
             {% if not value and {}.__getitem__('ERROR: The value for page_nype_config.' ~ name ~ ' is undefined') %}
             {% endif %}
-            {% set _ = page_nype_config.js.update({ name: value })-%}
+            {% set _ = page_nype_config.js.update({ name.lower(): value })-%}
         {% endfor -%}
     {% endif %}
     
@@ -107,6 +107,16 @@
             {%- set _ = page_nype_config.js.update({ name.lower(): value })-%}
         {% endfor -%}
     {% endif -%}
+
+    {#- Obfuscate values that should not be in plain text in the HTML -#}
+    {% if page_nype_config.obfuscate_keys %}
+        {% for name, value in page_nype_config.js.items() %}
+            {% if name in page_nype_config.obfuscate_keys %}
+                {% set value = (value | obfuscate) %}
+            {% endif %}
+            {%- set _ = page_nype_config.js.update({ name: value })-%}
+        {% endfor %}
+    {% endif %}
     <script>
         const nypeScriptConfig = JSON.parse('{{ page_nype_config.js | tojson }}');
     </script>

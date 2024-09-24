@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const allowPersonalEmails = config["contact_form_allow_personal_emails"];
     // Support legacy option free_subject
     const freeSubject = config["contact_form_free_subject"] ?? config["contact_form_subject"];
-    _gNypeDebug("actionHex", actionHex);
-    _gNypeDebug("emailHex", emailHex);
+    _gNypeDebug("actionHex", actionHex, _gNypeConvertHexToString(actionHex));
+    _gNypeDebug("emailHex", emailHex, _gNypeConvertHexToString(emailHex));
     _gNypeDebug("freeSubject", freeSubject);
 
     const form = document.querySelector(".nype-form");

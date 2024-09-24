@@ -17,6 +17,11 @@ mkdocs-macros-plugin only allows to set one directory for includes. However, the
 Jinja2.loaders.FileSystemLoader supports a list of paths, so override the macros
 plugin reference to FileSystemLoader.
 
+4. HEX data obfuscation tweak:
+Some data should be obfuscated in plain HTML to make it harder for bots to scrape 
+them. The obfuscation happens just before passing data to JavaScript. Later on 
+this data is deobfuscated in JavaScript.
+
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
@@ -33,8 +38,9 @@ from mkdocs.utils import CountHandler
 from mkdocs_macros import plugin as macros_module
 
 from ...utils import MACROS_INCLUDES_ROOT
+from . import utils
 from .config import NypeTweaksConfig
-from .utils import ServeMode, get_file_system_loader
+from .utils import ServeMode
 
 # region Core Logic Events
 
@@ -63,9 +69,15 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
 
         # Extend macros includes directory tweak
         if not ServeMode.run_once:
-            macros_module.FileSystemLoader = get_file_system_loader
+            macros_module.FileSystemLoader = utils.get_file_system_loader
 
         LOG.info("Tweaks initialized")
+
+    def on_env(
+        self, env: macros_module.Environment, /, *, config: MkDocsConfig, files: Files
+    ) -> macros_module.Environment | None:
+        # HEX data obfuscation tweak
+        env.filters["obfuscate"] = utils.obfuscate
 
     @event_priority(-100)
     def on_post_page(self, output: str, /, *, page: Page, config: MkDocsConfig) -> str | None:
