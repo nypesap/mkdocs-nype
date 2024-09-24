@@ -2,6 +2,9 @@ name: Reusable Nype Deploy CI
 
 on:
   workflow_call:
+    inputs:
+      INPUT_ENV:
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: true
@@ -26,6 +29,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          echo ${{ inputs.INPUT_ENV }} >> $GITHUB_ENV
+          echo $GITHUB_ENV
+          cat $GITHUB_ENV
       - uses: actions/checkout@v4
       - name: Configure Git Credentials
         run: |
