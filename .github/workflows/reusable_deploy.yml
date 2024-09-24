@@ -30,7 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo ${{ inputs.INPUT_ENV }} >> $GITHUB_ENV
+          echo '
+          ${{ inputs.INPUT_ENV }}
+          ' >> $GITHUB_ENV
           echo $GITHUB_ENV
           cat $GITHUB_ENV
       - uses: actions/checkout@v4
