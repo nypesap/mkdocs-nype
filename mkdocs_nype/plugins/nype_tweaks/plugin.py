@@ -26,6 +26,7 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
 import logging
+import os
 import sys
 
 import material
@@ -114,6 +115,23 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                         tag["name"] = "image"
 
     on_page_markdown = CombinedEvent(_on_page_markdown_social_meta)
+
+    def on_post_build(self, *, config: MkDocsConfig) -> None:
+
+        # Generate robots.txt tweak
+        sitemap_xml = config.site_url.rstrip("/") + "/sitemap.xml"
+        robots_txt = os.path.join(config.site_dir, "robots.txt")
+        with open(robots_txt, "w", encoding="utf-8") as file:
+            file.write(
+                "\n".join(
+                    [
+                        "User-agent: *",
+                        "Allow: /",
+                        "",
+                        f"Sitemap: {sitemap_xml}",
+                    ]
+                )
+            )
 
     def on_serve(
         self, server: LiveReloadServer, /, *, config: MkDocsConfig, builder
