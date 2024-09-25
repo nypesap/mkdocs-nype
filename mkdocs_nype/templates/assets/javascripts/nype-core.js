@@ -5,6 +5,7 @@ const _gNypeDebug = function () {
 };
 
 const _gNypeConvertHexToString = (hexData) => {
+    if (!hexData) return hexData;
     return atob(String.fromCharCode(...hexData.match(/.{1,2}/g).map(byte => parseInt(byte, 16))));
 };
 
