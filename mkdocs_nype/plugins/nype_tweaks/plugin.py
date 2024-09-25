@@ -126,7 +126,14 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                 "\n".join(
                     [
                         "User-agent: *",
-                        "Allow: /",
+                        "Disallow: /ggl-db/",
+                        "Disallow: /ggl-ggl/",
+                        "Disallow: /ggl-tdb/",
+                        "Disallow: /ggl-syn/",
+                        "Disallow: /ggl-tm/",
+                        "Disallow: /ggl-as2-str/",
+                        "Disallow: /ggl-a2-/",
+                        "Disallow: /ggl-a-/",
                         "",
                         f"Sitemap: {sitemap_xml}",
                     ]
