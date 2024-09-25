@@ -55,7 +55,7 @@
         {% for name in meta_config.css_include.split() -%}
             {% set name = name.lower() %}
             {% set value = available_css.get(name) %}
-            {% if not value and {}.__getitem__('ERROR: The value for available_css.' ~ name ~ ' is undefined') %}
+            {% if not value and {}.__getitem__('ERROR: The value for available_css.' ~ name ~ ' is undefined. File: ' ~ page.file.src_uri) %}
             {% endif %}
             <link rel="stylesheet" href="{{ value }}">
         {% endfor %}
@@ -94,8 +94,7 @@
         {% for name in meta_config.js_include.split() -%}
             {% set name = name.lower() %}
             {% set value = page_nype_config.get(name) %}
-            {% if not value and {}.__getitem__('ERROR: The value for page_nype_config.' ~ name ~ ' is undefined') %}
-            {% endif %}
+            {% if not value and {}.__getitem__('ERROR: The value for page_nype_config.' ~ name ~ ' is undefined. File: ' ~ page.file.src_uri) %}{% endif %}
             {% set _ = page_nype_config.js.update({ name.lower(): value })-%}
         {% endfor -%}
     {% endif %}
@@ -108,8 +107,12 @@
         {% endfor -%}
     {% endif -%}
 
-    {#- Obfuscate values that should not be in plain text in the HTML -#}
+    {#- Validate all required keys are available. This can be set inside a macro template. -#}
+    {% for key in page_nype_config.required_js_keys %}
+        {% if key not in page_nype_config.js and {}.__getitem__('ERROR: The required key "' ~ key ~ '" is not available. File: ' ~ page.file.src_uri) %}{% endif %}
+    {% endfor %}
     
+    {#- Obfuscate values that should not be in plain text in the HTML -#}
     {% for name, value in page_nype_config.js.items() %}
         {% if name.endswith("_hex") %}
             {% set value = (value | obfuscate) %}
