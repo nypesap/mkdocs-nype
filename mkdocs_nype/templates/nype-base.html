@@ -109,14 +109,13 @@
     {% endif -%}
 
     {#- Obfuscate values that should not be in plain text in the HTML -#}
-    {% if page_nype_config.obfuscate_keys %}
-        {% for name, value in page_nype_config.js.items() %}
-            {% if name in page_nype_config.obfuscate_keys %}
-                {% set value = (value | obfuscate) %}
-            {% endif %}
-            {%- set _ = page_nype_config.js.update({ name: value })-%}
-        {% endfor %}
-    {% endif %}
+    
+    {% for name, value in page_nype_config.js.items() %}
+        {% if name.endswith("_hex") %}
+            {% set value = (value | obfuscate) %}
+        {% endif %}
+        {%- set _ = page_nype_config.js.update({ name: value })-%}
+    {% endfor %}
     <script>
         const nypeScriptConfig = JSON.parse('{{ page_nype_config.js | tojson }}');
     </script>

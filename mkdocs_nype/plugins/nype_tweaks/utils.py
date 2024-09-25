@@ -45,6 +45,14 @@ def is_hex_string(text: str):
 def obfuscate(text: str):
     """Turn plain text into base64 and obfuscate it as hex"""
 
+    if not isinstance(text, str):
+        raise ValueError(
+            f"HEX obfuscation is only avaialble for text strings not {type(text)}({text})"
+        )
+
+    # side-effect, but we want consistent results
+    text = text.strip()
+
     if is_hex_string(text):
         return text
 
