@@ -37,6 +37,7 @@ from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 from mkdocs.utils import CountHandler
 from mkdocs_macros import plugin as macros_module
+from pathspec.gitignore import GitIgnoreSpec
 
 from ...utils import MACROS_INCLUDES_ROOT
 from . import utils
@@ -50,12 +51,18 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
 
     def __init__(self) -> None:
         self.dest_url_mapping = {}
+        self.draft_paths: GitIgnoreSpec = None
 
     @event_priority(110)
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig | None:
         """Break convention of max 100 priority"""
 
         self.dest_url_mapping.clear()
+        self.draft_paths = None
+
+        draft_paths: str = config.theme.get("nype_config", {}).get("exclude_via_robots")
+        if draft_paths:
+            self.draft_paths = GitIgnoreSpec.from_lines(lines=draft_paths.splitlines())
 
         # Theme __init__.py issue count handler tweak
         if config.strict:
@@ -114,9 +121,40 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                     if value == "og:image":
                         tag["name"] = "image"
 
-    on_page_markdown = CombinedEvent(_on_page_markdown_social_meta)
+    def _on_page_markdown_robots(
+        self, markdown: str, /, *, page: Page, config: MkDocsConfig, files: Files
+    ) -> str | None:
+        """Set the meta noindex value for draft_paths"""
+
+        if not self.draft_paths:
+            return
+
+        if not self.draft_paths.match_file(page.file.src_uri):
+            return
+
+        if page.meta.get("nype_config") is None:
+            page.meta["nype_config"] = {}
+
+        page.meta["nype_config"]["robots_content"] = "noindex"
+
+        # Set urls to None to hide the page from the sitemap.xml
+        # In case of bugs another option is to override the sitemap.xml template
+        page.canonical_url = None
+        page.abs_url = None
+
+        LOG.debug(f"robots_content set for {page.file.src_uri}")
+
+    on_page_markdown = CombinedEvent(_on_page_markdown_social_meta, _on_page_markdown_robots)
 
     def on_post_build(self, *, config: MkDocsConfig) -> None:
+
+        # Add the draft_paths into disallowed paths in the robots.txt file
+        disallow_paths = set()
+        if self.draft_paths:
+            draft_paths: str = config.theme["nype_config"]["exclude_via_robots"].splitlines()
+            for path in draft_paths:
+                path = "/" + path.strip().strip("/") + "/"
+                disallow_paths.add(path)
 
         # Generate robots.txt tweak
         sitemap_xml = config.site_url.rstrip("/") + "/sitemap.xml"
@@ -134,7 +172,7 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                         "Disallow: /ggl-as2-str/",
                         "Disallow: /ggl-a2-/",
                         "Disallow: /ggl-a-/",
-                        "",
+                        *([f"Disallow: {p}" for p in disallow_paths] + [""]),
                         f"Sitemap: {sitemap_xml}",
                     ]
                 )

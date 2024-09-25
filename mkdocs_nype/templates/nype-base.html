@@ -40,7 +40,12 @@
         {%- endif %}
     {%- endblock -%}
     {% block nype_robots -%}
-        <meta property="robots" content="index, follow">
+        {% if has_meta_config and meta_config.robots_content -%}
+            {%- set robots_content = meta_config.robots_content -%}
+        {% else %}
+            {%- set robots_content = "index, follow" -%}
+        {% endif %}
+        <meta property="robots" content="{{ robots_content }}">
     {%- endblock %}
 {%- endblock -%}
 
