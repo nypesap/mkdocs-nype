@@ -326,8 +326,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const allMembersElement = document.querySelector(".nype-discord-invite-stats .all-members");
     const buttonElement = document.querySelector(".nype-discord-invite-join");
 
-    if (!headerElement.innerText.trim()) {
-        headerElement.innerText = `${renderData["global_username"]} (${renderData["raw_username"]}) invites you to join`;
+    if (!headerElement.innerHTML.trim()) {
+        headerElement.innerHTML = `${renderData["global_username"]} (${renderData["raw_username"]}) invites you to join`;
     }
     if (!logoElement.innerHTML.trim()) {
         logoElement.insertAdjacentElement("afterbegin", logoImage);
@@ -336,15 +336,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         titleElement.insertAdjacentElement("afterbegin", titleAnchor);
     }
     if (!onlineMembersElement.innerHTML.trim()) {
-        onlineMembersElement.innerText = renderData["online_count"];
+        onlineMembersElement.innerHTML = renderData["online_count"];
     }
     if (!allMembersElement.innerHTML.trim()) {
-        allMembersElement.innerText = renderData["member_count"];
+        allMembersElement.innerHTML = renderData["member_count"];
     }
-    if (!buttonElement.innerHTML.trim()) {
-        buttonElement.insertAdjacentElement("beforebegin", buttonAnchor);
-        buttonAnchor.insertAdjacentElement("afterbegin", buttonElement);
-    }
+
+    buttonElement.insertAdjacentElement("beforebegin", buttonAnchor);
+    buttonAnchor.insertAdjacentElement("afterbegin", buttonElement);
 
     __md_set(cacheKey, renderData, sessionStorage);
     inviteElement.classList.remove("not-loaded");
