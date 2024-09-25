@@ -32,42 +32,47 @@ jobs:
           echo '
           ${{ secrets.INPUT_ENV }}
           ' >> $GITHUB_ENV
-      - uses: actions/checkout@v4
+      - name: Checkout Caller Repo
+        uses: actions/checkout@v4
+      - name: Checkout mkdocs-nype repo
+        run: git clone --depth 1 https://github.com/nypesap/mkdocs-nype.git
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-      - name: Download variable dependency list from the theme
-        run: |
-          wget -O requirements-theme.txt https://raw.githubusercontent.com/nypesap/mkdocs-nype/main/requirements.txt
-          wget -O pyproject-theme.toml https://raw.githubusercontent.com/nypesap/mkdocs-nype/main/pyproject.toml
       - name: Install Python
         id: install-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: 3
           cache: pip
       - name: Process Python Cache
         id: cache-requirements
         uses: actions/cache@v4
         with:
           path: venv
-          key: requirements-${{ steps.install-python.outputs.python-version }}-${{ hashFiles('requirements*.txt', 'pyproject*.toml') }}
+          key: requirements-${{ steps.install-python.outputs.python-version }}-${{ hashFiles('mkdocs-nype/requirements*.txt', 'mkdocs-nype/mkdocs_nype/**') }}
+          restore-keys: |
+            requirements-${{ steps.install-python.outputs.python-version }}
       - name: Install Uncached Requirements
         if: steps.cache-requirements.outputs.cache-hit != 'true'
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
-      - run: mkdir -p .cache; echo mkdocs-material > .cache/safe
-      - uses: actions/cache@v4
+          pip install mkdocs-nype/
+      - name: Create dummy cache file
+        run: mkdir -p .cache; echo mkdocs-material > .cache/safe
+      - name: Process Material for MkDocs Cache
+        uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ hashfiles('.cache/**') }}
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: venv/bin/python -m mkdocs_nype --minify --inject-minified
-      - run: venv/bin/python -m mkdocs build --strict
+      - name: Run theme pre-build scripts
+        run: venv/bin/python -m mkdocs_nype --minify --inject-minified
+      - name: Build site
+        run: venv/bin/python -m mkdocs build --strict
       - name: Prepare deploy archive
         run: |
           zip -r site.zip site/
