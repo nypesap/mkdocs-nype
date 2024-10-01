@@ -124,6 +124,25 @@
         {% endif %}
         {%- set _ = page_nype_config.js.update({ name: value })-%}
     {% endfor %}
+
+    {#- Set tags with external assets. Mostly for usage in plugins like latest_blog_post -#}
+    {%- if page_nype_config.head_tags -%}
+        {%- for head_tag in page_nype_config.head_tags -%}
+            <{{ head_tag.name -}}
+            {%- for attr_name, attr_value in head_tag.attributes.items() %}
+                {% if attr_value -%}
+                    {{ attr_name }}="{{ attr_value }}"{# Whitespace -#}
+                {% else -%}
+                    {{ attr_name }}{# Whitespace -#}
+                {% endif -%}
+            {% endfor -%}
+            >
+            {%- if head_tag.name == "script" -%}
+                </{{ head_tag.name }}>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
     <script>
         const nypeScriptConfig = JSON.parse('{{ page_nype_config.js | tojson }}');
     </script>

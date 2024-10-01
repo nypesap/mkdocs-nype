@@ -80,6 +80,24 @@ class LatestBlogPostsPlugin(BasePlugin[LatestBlogPostsConfig]):
             js = f"<script>{minify_plugin.jsmin.jsmin(JS_TEMPLATE)}</script>\n"
             lines[0] = f"{css}{js}{lines[0]}"
 
+            # Add timeago so that users don't have to
+            nype_config = page.meta.get("nype_config")
+            if nype_config is None:
+                page.meta["nype_config"] = nype_config = {}
+
+            head_tags = nype_config.get("head_tags")
+            if head_tags is None:
+                nype_config["head_tags"] = head_tags = []
+
+            timeago_tag = {
+                "name": "script",
+                "attributes": {
+                    "src": "https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js",
+                    "defer": "",
+                },
+            }
+            head_tags.append(timeago_tag)
+
         return "\n".join(lines)
 
 
@@ -146,6 +164,7 @@ def insert_latest_posts(line, config: MkDocsConfig):
                 date = post.config.date["created"].strftime(strftime)
                 date_span = f'<span class="nype-latest-post-date">{date}</span>'
             li_entries += f"    - {date_span}\n    [{text}]({href})\n"
+            li_entries += '    {: class="nype-latest-post-entry" }\n'
     elif display == "html_simple":
         insert_body = HTML_SIMPLE_TEMPLATE
         blog_index_url = instance.blog.file.url
@@ -167,6 +186,8 @@ def insert_latest_posts(line, config: MkDocsConfig):
         blog_index_url=blog_index_url,
         read_more=read_more,
         title=title,
+        title_attr_list='{: class="nype-latest-posts-title" }',
+        read_more_attr_list='{: class="nype-latest-posts-read-more" }',
     )
 
 
@@ -217,6 +238,7 @@ HTML_SIMPLE_TEMPLATE: str = (
 MARKDOWN_GRID_TEMPLATE: str = (
     """
 - {title}
+{title_attr_list}
 
     ---
 
@@ -224,7 +246,8 @@ MARKDOWN_GRID_TEMPLATE: str = (
 
     ---
 
-    [{read_more}]({blog_index_url})
+    [{read_more}]({blog_index_url}) 
+    {read_more_attr_list}
 
 """.lstrip()
 )
@@ -254,11 +277,9 @@ CSS_TEMLATE: str = (
     color: var(--md-default-fg-color--light);
     display: block;
 }
-.grid.cards ul {
+.nype-latest-post-entry {
+    margin-left: 0 !important;
     list-style: none;
-}
-.grid.cards ul li {
-    margin-left: 0;
 }
 """.strip()
 )
