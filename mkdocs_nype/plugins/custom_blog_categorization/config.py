@@ -31,3 +31,7 @@ class CustomBlogCategorizationConfig(Config):
     # Settings for posts
     post_excerpt_max = Type(int, default=5)
     # post_url_max_industries = 1  # Currently has no effect, URLs require more overrides
+
+    # Settings for templates
+    icon = Type(str, default="material/briefcase")
+    singular_name = Optional(Type(str))

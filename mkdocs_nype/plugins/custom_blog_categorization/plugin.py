@@ -28,7 +28,9 @@ from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, PrefixedLogger, event_priority
 from mkdocs.structure.files import Files, InclusionLevel
-from mkdocs.structure.nav import Section
+from mkdocs.structure.nav import Navigation, Section
+from mkdocs.structure.pages import Page
+from mkdocs.utils.templates import TemplateContext
 
 from .config import CustomBlogCategorizationConfig
 
@@ -66,6 +68,19 @@ class CustomBlogCategorizationPlugin(BasePlugin[CustomBlogCategorizationConfig])
         if self.blog_instance._render_post.__name__ != "wrapper":
             LOG.warning("_render_post toc override was not applied")
             return
+
+        # Categories and Industries end with 'ies', or 'y' for singluar
+        if self.config.singular_name is None:
+            # Remove the last split element
+            without_ies = self.config.render_name.split("ies")[:-1]
+            # More ies than expected
+            if not self.config.render_name.endswith("ies") or len(without_ies) != 1:
+                raise PluginError(
+                    f"Singular name could not be resolved for {self.config.render_name}. "
+                    "Please set it manually."
+                )
+            else:
+                self.config.singular_name = without_ies[0] + "y"
 
         LOG.info("Industry View override found no issues")
 
@@ -132,6 +147,22 @@ class CustomBlogCategorizationPlugin(BasePlugin[CustomBlogCategorizationConfig])
             self.config.code_name,
             getattr(page, self.config.code_name)[:max_categorization],
         )
+
+        try:
+            custom_categorizations = page.custom_categorizations
+        except AttributeError:
+            custom_categorizations = None
+
+        if custom_categorizations is None:
+            custom_categorizations = {}
+            page.custom_categorizations = custom_categorizations
+            page.excerpt.custom_categorizations = custom_categorizations
+
+        custom_categorizations[self.config.code_name] = {
+            "icon": self.config.icon,
+            "plural_name": self.config.render_name,
+            "singular_name": self.config.singular_name,
+        }
 
     def decorate_render_post(self, func):
         """The categorization_toc isn't taken into account when rendering, so adjust the view afterwards"""
