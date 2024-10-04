@@ -24,6 +24,7 @@
   Modified for mkdocs-nype, last checked up-to-date with mkdocs-material 9.5.39
   
   - Added handling of custom categorization via the custom_blog_categorization plugin
+  - Added option to hide post metadata via custom hide_post_metadata config option
 
   MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 -#}
@@ -82,103 +83,105 @@
               </div>
             {% endif %}
 
-            <!-- Post metadata -->
-            <ul class="md-post__meta md-nav__list">
-              <li class="md-nav__item md-nav__item--section">
-                <div class="md-post__title">
-                  <span class="md-ellipsis">
-                    {{ lang.t("blog.meta") }}
-                  </span>
-                </div>
-                <nav class="md-nav">
-                  <ul class="md-nav__list">
+            {% if not hide_post_metadata %}
+              <!-- Post metadata -->
+              <ul class="md-post__meta md-nav__list">
+                <li class="md-nav__item md-nav__item--section">
+                  <div class="md-post__title">
+                    <span class="md-ellipsis">
+                      {{ lang.t("blog.meta") }}
+                    </span>
+                  </div>
+                  <nav class="md-nav">
+                    <ul class="md-nav__list">
 
-                    <!-- Post date -->
-                    <li class="md-nav__item">
-                      <div class="md-nav__link">
-                        {% include ".icons/material/calendar.svg" %}
-                        <time
-                          datetime="{{ page.config.date.created }}"
-                          class="md-ellipsis"
-                        >
-                          {{- page.config.date.created | date -}}
-                        </time>
-                      </div>
-                    </li>
-
-                    <!-- Post date updated -->
-                    {% if page.config.date.updated %}
+                      <!-- Post date -->
                       <li class="md-nav__item">
                         <div class="md-nav__link">
-                          {% include ".icons/material/calendar-clock.svg" %}
+                          {% include ".icons/material/calendar.svg" %}
                           <time
-                            datetime="{{ page.config.date.updated }}"
+                            datetime="{{ page.config.date.created }}"
                             class="md-ellipsis"
                           >
-                            {{- page.config.date.updated | date -}}
+                            {{- page.config.date.created | date -}}
                           </time>
                         </div>
                       </li>
-                    {% endif %}
 
-                    <!-- Post categories -->
-                    {% if page.categories %}
-                      <li class="md-nav__item">
-                        <div class="md-nav__link">
-                          {% include ".icons/material/bookshelf.svg" %}
-                          <span class="md-ellipsis">
-                            {{ lang.t("blog.categories.in") }}
-                            {% for category in page.categories %}
-                              <a href="{{ category.url | url }}">
-                                {{- category.title -}}
-                              </a>
-                              {%- if loop.revindex > 1 %}, {% endif -%}
-                            {% endfor -%}
-                          </span>
-                        </div>
-                      </li>
-                    {% endif %}
-                    
-                    <!-- Post custom categorization managed by custom_blog_categorization plugin -->
-                    {% if page.custom_categorizations %}
-                      {% for categorization, properties in page.custom_categorizations.items() %}
+                      <!-- Post date updated -->
+                      {% if page.config.date.updated %}
                         <li class="md-nav__item">
                           <div class="md-nav__link">
-                            {% include ".icons/" ~ properties.icon ~ ".svg" %}
+                            {% include ".icons/material/calendar-clock.svg" %}
+                            <time
+                              datetime="{{ page.config.date.updated }}"
+                              class="md-ellipsis"
+                            >
+                              {{- page.config.date.updated | date -}}
+                            </time>
+                          </div>
+                        </li>
+                      {% endif %}
+
+                      <!-- Post categories -->
+                      {% if page.categories %}
+                        <li class="md-nav__item">
+                          <div class="md-nav__link">
+                            {% include ".icons/material/bookshelf.svg" %}
                             <span class="md-ellipsis">
                               {{ lang.t("blog.categories.in") }}
-                              {% for entry in page[categorization] %}
-                                <a href="{{ entry.url | url }}">
-                                  {{- entry.title -}}
+                              {% for category in page.categories %}
+                                <a href="{{ category.url | url }}">
+                                  {{- category.title -}}
                                 </a>
                                 {%- if loop.revindex > 1 %}, {% endif -%}
                               {% endfor -%}
                             </span>
                           </div>
                         </li>
-                      {% endfor %}
-                    {% endif %}
+                      {% endif %}
+                      
+                      <!-- Post custom categorization managed by custom_blog_categorization plugin -->
+                      {% if page.custom_categorizations %}
+                        {% for categorization, properties in page.custom_categorizations.items() %}
+                          <li class="md-nav__item">
+                            <div class="md-nav__link">
+                              {% include ".icons/" ~ properties.icon ~ ".svg" %}
+                              <span class="md-ellipsis">
+                                {{ lang.t("blog.categories.in") }}
+                                {% for entry in page[categorization] %}
+                                  <a href="{{ entry.url | url }}">
+                                    {{- entry.title -}}
+                                  </a>
+                                  {%- if loop.revindex > 1 %}, {% endif -%}
+                                {% endfor -%}
+                              </span>
+                            </div>
+                          </li>
+                        {% endfor %}
+                      {% endif %}
 
-                    <!-- Post readtime -->
-                    {% if page.config.readtime %}
-                      {% set time = page.config.readtime %}
-                      <li class="md-nav__item">
-                        <div class="md-nav__link">
-                          {% include ".icons/material/clock-outline.svg" %}
-                          <span class="md-ellipsis">
-                            {% if time == 1 %}
-                              {{ lang.t("readtime.one") }}
-                            {% else %}
-                              {{ lang.t("readtime.other") | replace("#", time) }}
-                            {% endif %}
-                          </span>
-                        </div>
-                      </li>
-                    {% endif %}
-                  </ul>
-                </nav>
-              </li>
-            </ul>
+                      <!-- Post readtime -->
+                      {% if page.config.readtime %}
+                        {% set time = page.config.readtime %}
+                        <li class="md-nav__item">
+                          <div class="md-nav__link">
+                            {% include ".icons/material/clock-outline.svg" %}
+                            <span class="md-ellipsis">
+                              {% if time == 1 %}
+                                {{ lang.t("readtime.one") }}
+                              {% else %}
+                                {{ lang.t("readtime.other") | replace("#", time) }}
+                              {% endif %}
+                            </span>
+                          </div>
+                        </li>
+                      {% endif %}
+                    </ul>
+                  </nav>
+                </li>
+              </ul>
+            {% endif %}
           </nav>
 
           <!-- Table of contents, if integrated -->

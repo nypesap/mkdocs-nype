@@ -13,6 +13,10 @@ Instead of manually setting and enabling a plugin, every project would benefit f
 automatically enabled plugin at runtime that does some kind of validation during the event
 loop, or enable any recommended plugin markdown extension in each project.
 
+material extensions:
+Instead of configuring other plugins and overriding internals of mkdocs-material plugins
+extend them before they're loaded into "Python memory"
+
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
@@ -27,6 +31,8 @@ from mkdocs.config.base import ValidationError
 from mkdocs.config.config_options import Plugins
 from mkdocs.plugins import PrefixedLogger
 from mkdocs.utils import CountHandler
+
+from .extensions import material as material_extension
 
 LOG: PrefixedLogger = PrefixedLogger("mkdocs_nype", logging.getLogger(f"mkdocs.themes.mkdocs_nype"))
 
@@ -158,3 +164,4 @@ def _get_checksum(source: str) -> str:
 if __name__ == "mkdocs_nype":
     patch_default_plugins_auto_load()
     patch_plugin_loading()
+    material_extension.extend_blog()

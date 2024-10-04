@@ -24,7 +24,8 @@
   Modified for mkdocs-nype, last checked up-to-date with mkdocs-material 9.5.39
   
   - Added handling of custom categorization via the custom_blog_categorization plugin
-  - Disabled the Continue Reading button
+  - Added option to hide the Continue Reading link via custom hide_read_more config option
+  - Added option to hide post metadata via custom hide_post_metadata config option
 
   Also note that 'post' is used here rather loosely and it's the Excerpt View object.
 
@@ -33,96 +34,98 @@
 
 <!-- Post excerpt -->
 <article class="md-post md-post--excerpt">
-  <header class="md-post__header">
+  {% if not hide_post_metadata %}
+    <header class="md-post__header">
 
-    <!-- Post authors -->
-    {% if post.authors %}
-      <nav class="md-post__authors md-typeset">
-        {% for author in post.authors %}
-          <span class="md-author">
-            <img src="{{ author.avatar | url }}" alt="{{ author.name }}" />
-          </span>
-        {% endfor %}
-      </nav>
-    {% endif %}
+      <!-- Post authors -->
+      {% if post.authors %}
+        <nav class="md-post__authors md-typeset">
+          {% for author in post.authors %}
+            <span class="md-author">
+              <img src="{{ author.avatar | url }}" alt="{{ author.name }}" />
+            </span>
+          {% endfor %}
+        </nav>
+      {% endif %}
 
-    <!-- Post metadata -->
-    <div class="md-post__meta md-meta">
-      <ul class="md-meta__list">
+      <!-- Post metadata -->
+      <div class="md-post__meta md-meta">
+        <ul class="md-meta__list">
 
-        <!-- Post date -->
-        <li class="md-meta__item">
-          <time datetime="{{ post.config.date.created }}">
-            {{- post.config.date.created | date -}}
-          </time>
-          {#- Collapse whitespace -#}
-        </li>
-
-        <!-- Post categories -->
-        {% if post.categories %}
+          <!-- Post date -->
           <li class="md-meta__item">
-            {# lang.t("blog.categories.in") #}
-            {% set cat_len = post.categories | length %}
-            Categor{{ 'y' if cat_len < 2 else 'ies' }}
-            {% for category in post.categories %}
-              <a
-                href="{{ category.url | url }}"
-                class="md-meta__link"
-              >
-                {{- category.title -}}
-              </a>
-              {%- if loop.revindex > 1 %}, {% endif -%}
-            {% endfor -%}
+            <time datetime="{{ post.config.date.created }}">
+              {{- post.config.date.created | date -}}
+            </time>
+            {#- Collapse whitespace -#}
           </li>
-        {% endif %}
 
-        <!-- Post custom categorization managed by custom_blog_categorization plugin -->
-        {% if post.custom_categorizations %}
-          {% for categorization, properties in post.custom_categorizations.items() %}
+          <!-- Post categories -->
+          {% if post.categories %}
             <li class="md-meta__item">
-              {%- set cat_len = post[categorization] | length -%}
-              {{ properties.singular_name if cat_len < 2 else properties.plural_name }}
-              {% for entry in post[categorization] %}
+              {# lang.t("blog.categories.in") #}
+              {% set cat_len = post.categories | length %}
+              Categor{{ 'y' if cat_len < 2 else 'ies' }}
+              {% for category in post.categories %}
                 <a
-                  href="{{ entry.url | url }}"
+                  href="{{ category.url | url }}"
                   class="md-meta__link"
                 >
-                  {{- entry.title -}}
+                  {{- category.title -}}
                 </a>
                 {%- if loop.revindex > 1 %}, {% endif -%}
               {% endfor -%}
             </li>
-          {% endfor %}
-        {% endif %}
+          {% endif %}
 
-        <!-- Post readtime -->
-        {% if post.config.readtime %}
-          {% set time = post.config.readtime %}
-          <li class="md-meta__item">
-            {% if time == 1 %}
-              {{ lang.t("readtime.one") }}
-            {% else %}
-              {{ lang.t("readtime.other") | replace("#", time) }}
-            {% endif %}
-          </li>
-        {% endif %}
-      </ul>
+          <!-- Post custom categorization managed by custom_blog_categorization plugin -->
+          {% if post.custom_categorizations %}
+            {% for categorization, properties in post.custom_categorizations.items() %}
+              <li class="md-meta__item">
+                {%- set cat_len = post[categorization] | length -%}
+                {{ properties.singular_name if cat_len < 2 else properties.plural_name }}
+                {% for entry in post[categorization] %}
+                  <a
+                    href="{{ entry.url | url }}"
+                    class="md-meta__link"
+                  >
+                    {{- entry.title -}}
+                  </a>
+                  {%- if loop.revindex > 1 %}, {% endif -%}
+                {% endfor -%}
+              </li>
+            {% endfor %}
+          {% endif %}
 
-      <!-- Draft marker -->
-      {% if post.config.draft %}
-        <span class="md-draft">
-          {{ lang.t("blog.draft") }}
-        </span>
-      {% endif %}
-    </div>
-  </header>
+          <!-- Post readtime -->
+          {% if post.config.readtime %}
+            {% set time = post.config.readtime %}
+            <li class="md-meta__item">
+              {% if time == 1 %}
+                {{ lang.t("readtime.one") }}
+              {% else %}
+                {{ lang.t("readtime.other") | replace("#", time) }}
+              {% endif %}
+            </li>
+          {% endif %}
+        </ul>
+
+        <!-- Draft marker -->
+        {% if post.config.draft %}
+          <span class="md-draft">
+            {{ lang.t("blog.draft") }}
+          </span>
+        {% endif %}
+      </div>
+    </header>
+  {% endif %}
 
   <!-- Post content -->
   <div class="md-post__content md-typeset">
     {{ post.content }}
 
     <!-- Continue reading link -->
-    {% if post.more and false %}
+    {% if post.more and not hide_read_more %}
       <nav class="md-post__action">
         <a href="{{ post.url | url }}">
           {{ lang.t("blog.continue") }}
