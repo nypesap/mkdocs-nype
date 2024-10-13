@@ -24,12 +24,12 @@ class ServerRedirectsPlugin(BasePlugin[ServerRedirectsConfig]):
 
         # Find redirects plugin
         for name, instance in config.plugins.items():
-            if name.split()[0].endswith("redirects"):
+            if name.split()[0].split("/")[-1] == "redirects":
                 self.redirects_plugin = instance
                 break
 
         # Check if there is anything to process
-        redirect_maps = None
+        redirect_maps = {}
         if self.redirects_plugin:
             redirect_maps = self.redirects_plugin.config.get("redirect_maps")
 
@@ -48,6 +48,7 @@ class ServerRedirectsPlugin(BasePlugin[ServerRedirectsConfig]):
         if self.config.raw_redirects:
             self.output_redirects.update(self.config.raw_redirects)
 
+        redirect_maps = {}
         if self.redirects_plugin:
             redirect_maps = self.redirects_plugin.config.get("redirect_maps") or {}
 
