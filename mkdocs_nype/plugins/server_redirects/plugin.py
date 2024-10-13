@@ -106,6 +106,15 @@ class ServerRedirectsPlugin(BasePlugin[ServerRedirectsConfig]):
         lines: list[str] = []
 
         for old, new in self.output_redirects.items():
+            if "{" in old or "}" in old:
+                wrapper = "'"
+                if wrapper in old:
+                    wrapper = '"'
+                if wrapper in old:
+                    raise NotImplementedError(
+                        "Handling of all {}'\" characters is not supported - " + old
+                    )
+                old = wrapper + old + wrapper
             lines.append(f"rewrite {old} {new} permanent;")
 
         output_path = self.config.output_path.format(site_dir=config.site_dir)
