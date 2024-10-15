@@ -7,6 +7,10 @@ The icons are taken from the https://github.com/SAP/ui5-webcomponents/ repositor
 ICON_JSONS_URLS at the bottom of the file store URLs to fetch that contain JSON file with SVG paths.
 Those paths are injected into a <svg> tag with a viewBox of 0 0 512 512
 
+The plugin overrides the FileSystemLoader.get_source function to inject the SVGs when accessed via 
+Jinja templates. The logic tries to load the files from the filesystem, but then falls back to 
+processing the loaded virtual indexes.
+
 Additionally, there are Nype icons/emojis injected as well.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
@@ -16,10 +20,14 @@ import datetime as dt
 import json
 import logging
 from pathlib import Path
+from typing import Any, Callable
 from xml.etree.ElementTree import Element  # This is expected to be added by mkdocs-material
 
 import requests  # This is expected to be added by mkdocs-material
+from jinja2.exceptions import TemplateNotFound
+from jinja2.loaders import FileSystemLoader
 from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.livereload import LiveReloadServer
 from mkdocs.plugins import BasePlugin, PrefixedLogger
 
 from .config import SapIconsConfig
@@ -53,6 +61,64 @@ class SapIconsPlugin(BasePlugin[SapIconsConfig]):
         generator_func = config.mdx_configs["pymdownx.emoji"]["emoji_generator"]
         config.mdx_configs["pymdownx.emoji"]["emoji_generator"] = emoji_decorator(generator_func)
 
+        if not ServeHelper.run_once:
+            FileSystemLoader.get_source = wrap_get_source(FileSystemLoader.get_source)
+
+    def on_serve(
+        self, server: LiveReloadServer, /, *, config: MkDocsConfig, builder: Callable[..., Any]
+    ) -> LiveReloadServer | None:
+        ServeHelper.run_once = True
+
+
+class ServeHelper:
+
+    run_once = False
+    """Flag to keep track if the server was run"""
+
+
+def wrap_get_source(func):
+
+    if func.__name__ == "wrapper":
+        return func
+
+    def wrapper(self, environment, template: str):
+
+        # Try to load the file from the filesystem first
+        try:
+            return func(self, environment, template)
+        except TemplateNotFound as err:
+            if template.startswith(".icons/ext"):
+                return template_from_index(template), "", lambda: True
+            else:
+                raise err
+
+    return wrapper
+
+
+def template_from_index(template: str):
+
+    # Assuming prefix is .icons/ext
+    # Assuming only the first / in the path needs to be converted to -
+
+    shortname = template.lower().replace(".icons/ext/", "").replace(".svg", "")
+    shortname = shortname.replace("/", "-", 1)
+    shortname = f":ext-{shortname}:"
+
+    icon_entry = None
+    for index in ICON_INDEXES:
+        icon_entry = index.get(shortname)
+        if icon_entry:
+            break
+
+    if not icon_entry:
+        raise KeyError(f"Can't find {shortname} in the loaded indexes")
+
+    return get_svg_with_path(icon_entry["svg_path"])
+
+
+def get_svg_with_path(path: str):
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="{path}"></path></svg>'
+
 
 def emoji_decorator(func):
 
@@ -76,11 +142,7 @@ def emoji_decorator(func):
         if shortname.startswith(NEW_ICON_PREFIX):
             icons = md.inlinePatterns["emoji"].emoji_index["emoji"]
             el = Element("span", {"class": options.get("classes", index)})
-            el.text = md.htmlStash.store(
-                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
-                + f'<path d="{icons[shortname]["svg_path"]}"></path>'
-                + "</svg>"
-            )
+            el.text = md.htmlStash.store(get_svg_with_path(icons[shortname]["svg_path"]))
             return el
 
         return func(index, shortname, alias, uc, alt, title, category, options, md)
