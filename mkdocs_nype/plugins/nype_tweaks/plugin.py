@@ -22,6 +22,11 @@ Some data should be obfuscated in plain HTML to make it harder for bots to scrap
 them. The obfuscation happens just before passing data to JavaScript. Later on 
 this data is deobfuscated in JavaScript.
 
+5. Blog cards tweak:
+To convert a normal blog post Excerpt to a Grid Card some HTML needs to be read
+from the page.content. The provided filter functions get called in the 
+post-card.html temeplate.
+
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
@@ -86,6 +91,9 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
     ) -> macros_module.Environment | None:
         # HEX data obfuscation tweak
         env.filters["obfuscate"] = utils.obfuscate
+        # blog cards tweak
+        env.filters["post_card_title"] = utils.post_card_title
+        env.filters["post_card_description"] = utils.post_card_description
 
     @event_priority(-100)
     def on_post_page(self, output: str, /, *, page: Page, config: MkDocsConfig) -> str | None:

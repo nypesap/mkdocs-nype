@@ -17,9 +17,9 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
 from material.plugins.blog import config as blog_config
-from material.plugins.blog.structure import View
+from material.plugins.blog.structure import Archive, Category, View
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import Choice, Deprecated, Optional, Type
+from mkdocs.config.config_options import Choice, Deprecated, DictOfItems, Optional, Type
 
 
 def extend_blog():
@@ -33,9 +33,46 @@ def extend_blog():
     # After modifying the config, import BlogPlugin to make further changes
     from material.plugins.blog import plugin as blog_plugin
 
+    blog_plugin.BlogPlugin.on_page_markdown = wrap_blog_on_page_markdown(
+        blog_plugin.BlogPlugin.on_page_markdown
+    )
     blog_plugin.BlogPlugin.on_page_context = wrap_blog_on_page_context(
         blog_plugin.BlogPlugin.on_page_context
     )
+
+
+def wrap_blog_on_page_markdown(func):
+
+    def extended(self, markdown: str, /, *, page, config, files):
+
+        view = self._resolve_original(page)
+        blog_view = view in self._resolve_views(self.blog)
+
+        result = func(self, markdown, page=page, config=config, files=files)
+
+        # Changes only for the Blog index root View
+        if view is self.blog:
+            if self.config.blog_cards == "index":
+                view.meta["template"] = "blog-cards.html"
+
+        # Changes for all Views except for the Blog index root
+        if blog_view and view is not self.blog:
+            if not isinstance(view, Archive) and self.config.blog_cards != "off":
+                blog_card_icons = self.config.blog_card_icons
+                blog_card_icon = blog_card_icons.get(view.title, blog_card_icons.get("_default"))
+                if not blog_card_icon:
+                    blog_card_icon = "material/file-document"
+
+                view.meta["icon"] = blog_card_icon
+
+        # Changes for all Views which belong to this Blog
+        if blog_view:
+            if self.config.blog_cards == "all":
+                view.meta["template"] = "blog-cards.html"
+
+        return result
+
+    return extended
 
 
 def wrap_blog_on_page_context(func):
@@ -52,6 +89,15 @@ def wrap_blog_on_page_context(func):
         if blog_view or blog_post:
             context["hide_read_more"] = self.config.hide_read_more
             context["hide_post_metadata"] = self.config.hide_post_metadata
+
+            if self.config.blog_cards != "off":
+
+                context["blog_cards"] = self.config.blog_cards
+                context["blog_card_continues"] = self.config.blog_card_continues
+                context["blog_card_icons"] = self.config.blog_card_icons
+
+                if isinstance(view, Category):
+                    context["blog_card_category_view"] = view.title
 
         return result
 
@@ -71,4 +117,21 @@ class BlogConfig(blog_config.BlogConfig):
     """
     Used later in templates to decide if the blog Views should show the metadata
     of the post, like the date and categories
+    """
+
+    blog_cards = Choice(("off", "index", "all"), default="off")
+    """
+    Toggle the blog_cards to show on all Views or only the index page
+    """
+
+    blog_card_continues = DictOfItems(Type(str), default={})
+    """
+    Mapping of category names to Continue Reading messages used in templates for
+    the blog post cards. _default key is reserved for the Default value.
+    """
+
+    blog_card_icons = DictOfItems(Type(str), default={})
+    """
+    Mapping of category names to icon paths used in templates for the blog post
+    cards. _default key is reserved for the Default value.
     """

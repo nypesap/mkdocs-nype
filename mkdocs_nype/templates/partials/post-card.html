@@ -1,0 +1,105 @@
+{#-
+  Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+-#}
+
+{#-
+  Modified for mkdocs-nype, last checked up-to-date with mkdocs-material 9.5.39
+
+  - This is the card version of the post.html
+  - This template should be used together with blog-card.html 
+  - The template supports dynamic connection to the post categories and other mata data
+
+  Also note that 'post' is used here rather loosely and it's the Excerpt View object.
+
+  MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
+-#}
+
+{#- nype_config of the Excerpt can contain overrides to some values -#}
+{% set post_nype_config = post.meta.nype_config or {} -%}
+
+{# store category separately for easier access later #}
+{% if blog_card_category_view -%}
+  {% set blog_card_category = blog_card_category_view -%}
+{% elif post.meta.categories -%}
+  {% set blog_card_category = post.meta.categories[0].strip() -%}
+{% endif -%}
+
+{# resolve category icon for card #}
+{% if post_nype_config.blog_card_icon -%}
+  {% set blog_card_icon = post_nype_config.blog_card_icon -%}
+{% elif blog_card_icons -%}
+  {% set blog_card_icon = blog_card_icons.get(blog_card_category, blog_card_icons._default) -%}
+{% endif -%}
+
+{% if not blog_card_icon -%}
+  {% set blog_card_icon = "material/file-document" -%}
+{% endif -%}
+
+{# resolve page read more prompt #}
+{% if post_nype_config.blog_card_continue -%}
+  {% set blog_card_continue = post_nype_config.blog_card_continue -%}
+{% elif blog_card_continues %}
+  {% set blog_card_continue = blog_card_continues.get(blog_card_category, blog_card_continues._default) -%}
+{% endif -%}
+
+{% if not blog_card_continue -%}
+  {% set blog_card_continue = lang.t("blog.continue") -%}
+{% endif -%}
+
+<!-- Post excerpt card -->
+<li>
+  <article class="md-post md-post--excerpt">
+
+    <!-- Post content -->
+    <div class="md-post__content md-typeset">
+      <p>
+        <span class="twemoji lg middle">
+          {% include ".icons/" ~ blog_card_icon ~ ".svg" -%}
+        </span>
+        <strong>
+          {% if post_nype_config.blog_card_title -%}
+            {{ post_nype_config.blog_card_title.format(post_title=post.post.title) -}}
+          {% else -%}
+            {{ post | post_card_title -}}
+          {% endif -%}
+        </strong>
+      </p>
+      
+      <hr>
+      
+      {% if post_nype_config.blog_card_description -%}
+        <p>{{ post_nype_config.blog_card_description.format(post_description=post.meta.description) }}</p>
+      {% else %}
+        {{ post | post_card_description -}}
+      {% endif %}
+
+      <!-- Continue reading link -->
+      {% if post.more and (blog_cards != "off" or not hide_read_more) %}
+        <nav class="md-post__action">
+          <a href="{{ post.url | url }}">
+            <span class="twemoji">{% include ".icons/octicons/arrow-right-24.svg" %}</span>
+            {{ blog_card_continue.format(category=blog_card_category) -}}
+          </a>
+        </nav>
+      {% endif %}
+    </div>
+  </article>
+</li>

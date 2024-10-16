@@ -1,8 +1,12 @@
 import base64
+import re
 import string
 from pathlib import Path
+from xml.etree import ElementTree
 
 from jinja2.loaders import FileSystemLoader
+from material.plugins.blog.structure import Excerpt
+from mkdocs.utils.templates import contextfilter
 
 from ...utils import MACROS_INCLUDES_ROOT
 
@@ -68,3 +72,46 @@ def deobfuscate(hex_text: str):
     """Turn hex back to string"""
 
     return base64.b64decode(bytes.fromhex(hex_text)).decode()
+
+
+def post_card_title(post: Excerpt):
+    """Get the title from the HTML, as post.title can differ"""
+
+    title_attr = "card_title"
+
+    if hasattr(post, title_attr):
+        return getattr(post, title_attr)
+
+    pattern = r"<a\s+[^>]*>(.*?)</a>"
+    match: re.Match = re.search(pattern, post.content)
+    if not match:
+        raise ValueError(
+            f"The Excerpt for {post.post.file.src_uri} does not contain an anchor tag with the title"
+        )
+
+    title = match.group(1)
+
+    setattr(post, title_attr, title)
+
+    return title
+
+
+def post_card_description(post: Excerpt):
+    """Get the contents of the Excerpt after the H2 tag"""
+
+    description_attr = "card_description"
+
+    if hasattr(post, description_attr):
+        return getattr(post, description_attr)
+
+    parts = post.content.split("</h2>")
+    if len(parts) != 2:
+        raise ValueError(
+            f"The Excerpt for {post.post.file.src_uri} does not contain a h2 closing tag"
+        )
+
+    description = parts[-1]
+
+    setattr(post, description_attr, description)
+
+    return description

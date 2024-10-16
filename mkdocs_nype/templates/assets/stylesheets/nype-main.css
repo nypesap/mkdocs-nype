@@ -397,3 +397,11 @@
 }
 
 /* #endregion */
+
+/* #region Overrides for blog post cards */
+
+.md-post--excerpt hr {
+    margin: 1em 0;
+}
+
+/* #endregion */
