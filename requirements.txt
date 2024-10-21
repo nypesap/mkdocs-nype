@@ -1,4 +1,4 @@
-mkdocs-material[imaging,recommended]==9.5.30
+mkdocs-material[imaging,recommended]==9.5.42
 mkdocs-macros-plugin==1.0.5
-neoteroi-mkdocs==1.0.5
-mkdocs-minify-html-plugin==0.2.2
+neoteroi-mkdocs==1.1.0
+mkdocs-minify-html-plugin==0.2.3
