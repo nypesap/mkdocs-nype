@@ -25,7 +25,12 @@ this data is deobfuscated in JavaScript.
 5. Blog cards tweak:
 To convert a normal blog post Excerpt to a Grid Card some HTML needs to be read
 from the page.content. The provided filter functions get called in the 
-post-card.html temeplate.
+post-card.html template.
+
+6. Create nype_config for page and sync with global tweak:
+This was previously done at render time in nype-base.html, but this is too late 
+for blog cards meta placeholders. To use the global value for the placeholder 
+better set it in the event.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
@@ -39,8 +44,10 @@ from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.livereload import LiveReloadServer
 from mkdocs.plugins import BasePlugin, CombinedEvent, PrefixedLogger, event_priority
 from mkdocs.structure.files import Files
+from mkdocs.structure.nav import Navigation
 from mkdocs.structure.pages import Page
 from mkdocs.utils import CountHandler
+from mkdocs.utils.templates import TemplateContext
 from mkdocs_macros import plugin as macros_module
 from pathspec.gitignore import GitIgnoreSpec
 
@@ -57,6 +64,7 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
     def __init__(self) -> None:
         self.dest_url_mapping = {}
         self.draft_paths: GitIgnoreSpec = None
+        self.nype_config_key = "nype_config"
 
     @event_priority(110)
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig | None:
@@ -94,6 +102,13 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
         # blog cards tweak
         env.filters["post_card_title"] = utils.post_card_title
         env.filters["post_card_description"] = utils.post_card_description
+
+    @event_priority(100)
+    def on_template_context(
+        self, context: TemplateContext, /, *, template_name: str, config: MkDocsConfig
+    ) -> TemplateContext | None:
+
+        prepare_context_with_nype_config(context, config)
 
     @event_priority(-100)
     def on_post_page(self, output: str, /, *, page: Page, config: MkDocsConfig) -> str | None:
@@ -152,7 +167,37 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
 
         LOG.debug(f"robots_content set for {page.file.src_uri}")
 
-    on_page_markdown = CombinedEvent(_on_page_markdown_social_meta, _on_page_markdown_robots)
+    @event_priority(100)
+    def _on_page_markdown_nype_config(
+        self, markdown: str, /, *, page: Page, config: MkDocsConfig, files: Files
+    ) -> str | None:
+
+        # Make sure meta keys are present
+        # As they could be used in templates, or macros etc.
+        meta_config = page.meta.get(self.nype_config_key)
+        if meta_config is None:
+            meta_config = page.meta[self.nype_config_key] = {}
+
+        meta_js = meta_config.get("js")
+        if meta_js is None:
+            meta_js = meta_config["js"] = {}
+
+        required_js_keys = meta_config.get("required_js_keys")
+        if required_js_keys is None:
+            required_js_keys = meta_config["required_js_keys"] = {}
+
+    on_page_markdown = CombinedEvent(
+        _on_page_markdown_social_meta,
+        _on_page_markdown_robots,
+        _on_page_markdown_nype_config,
+    )
+
+    @event_priority(100)
+    def on_page_context(
+        self, context: TemplateContext, /, *, page: Page, config: MkDocsConfig, nav: Navigation
+    ) -> TemplateContext | None:
+
+        prepare_context_with_nype_config(context, config, page=page)
 
     def on_post_build(self, *, config: MkDocsConfig) -> None:
 
@@ -194,6 +239,80 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
             server.watch(str(MACROS_INCLUDES_ROOT))
 
         ServeMode.run_once = True
+
+
+def prepare_context_with_nype_config(
+    context: TemplateContext, config: MkDocsConfig, page: Page = None
+):
+    """
+    The context needs to be prepared for both the templates like 404.html and Pages
+    Create nype_config for page and sync with global tweak
+    """
+
+    # Define a nype_config dict for the current page, instead of working with references
+    page_nype_config = {"js": dict()}
+    page_js = page_nype_config["js"]
+
+    # Get global config
+    theme_nype_config = config.theme.get("nype_config") or {}
+
+    # Get the local meta config
+    meta_config = {}
+    if page:
+        meta_config = page.meta.get("nype_config") or {}
+
+    # Load global values into the local dict. Skip 'js' to not copy a reference
+    for name, value in theme_nype_config.items():
+        if name != "js":
+            page_nype_config[name] = value
+
+    # Load JavaScript separately to create new memory references
+    theme_js = theme_nype_config.get("js") or {}
+    for name, value in theme_js.items():
+        page_js[name] = value
+
+    # Load values from meta_config, which can override globals. Skip 'js' to not copy a reference
+    for name, value in meta_config.items():
+        if name != "js":
+            page_nype_config[name] = value
+
+    # Include global 'non-js' values in the js of the current page
+    js_include = meta_config.get("js_include") or ""
+    for name in js_include.split():
+        value = page_nype_config.get(name)
+        if value is None:
+            LOG.warning(
+                f"The value for page_nype_config.{name} is undefined. File: {page.file.src_uri}"
+            )
+        page_js[name] = value
+
+    # Override JavaScript with values from meta config
+    meta_js = meta_config.get("js") or {}
+    for name, value in meta_js.items():
+        page_js[name] = value
+
+    # Validate all dict keys are lowercase to avoid any issues
+    for key in page_nype_config.keys() | page_js.keys():
+        if key != key.lower():
+            LOG.warning(f"The '{key}' key is not lowercase. File: {page.file.src_uri}")
+
+    # Validate all required keys are available. This can be set inside a macro template.
+    required_js_keys = page_nype_config.get("required_js_keys") or {}
+    for key in required_js_keys:
+        if key not in page_js:
+            LOG.warning(f"The required '{key}' key is not available. File: {page.file.src_uri}")
+
+    # Obfuscate values that should not be in plain text in the HTML
+    for name, value in page_js.items():
+        if name.endswith("_hex"):
+            value = utils.obfuscate(value)
+            page_js[name] = value
+
+    # Pass local variable to the templates
+    for key in ("page_nype_config", "theme_nype_config", "meta_config"):
+        if context.get(key):
+            LOG.warning(f"'{key}' is already present in the Context, overriding...")
+        context[key] = locals().get(key)
 
 
 # endregion

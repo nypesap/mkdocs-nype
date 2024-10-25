@@ -10,17 +10,6 @@
     {% set _ = config.theme.update({ 'is_serve': config.site_url.split('//')[1].split(':')[0] in ['127.0.0.1', 'localhost'] }) %}
 {% endif%}
 
-{# Define a nype_config dict for the current page, instead of working with the global reference -#}
-{# Defined in the outer scope to allow every block to access it -#}
-{% set page_nype_config = { 'js': {} } -%}
-{% set theme_nype_config = config.theme.nype_config or {} -%}
-
-{# Set a shortform handle for the conditionals below #}
-{% set has_meta_config = page.meta and page.meta.nype_config -%}
-{% if has_meta_config -%}
-    {% set meta_config = page.meta.nype_config -%}
-{% endif -%}
-
 {# Add special debug values for local testing #}
 {% if config.theme.is_serve -%}
     {% set _ = page_nype_config.js.update({ 'debug_form_hex': '6148523063484d364c79396d62334a74637935316269317a6447463061574d75593239744c325a76636d317a4c7a4a694e3251785a6a6b785a6a677a4f546b7a4d7a55774e6a6732595755324d6d51314d544a6b597a59325a6a5179595467314d6d593d' }) %}
@@ -40,7 +29,7 @@
         {%- endif %}
     {%- endblock -%}
     {% block nype_robots -%}
-        {% if has_meta_config and meta_config.robots_content -%}
+        {% if meta_config.robots_content -%}
             {%- set robots_content = meta_config.robots_content -%}
         {% else %}
             {%- set robots_content = "index, follow" -%}
@@ -56,7 +45,7 @@
         'neoteroi': 'assets/stylesheets/neoteroi.css' | url
     } %}
     {# Include additional CSS based on the page settings #}
-    {% if has_meta_config and meta_config.css_include -%}
+    {% if meta_config.css_include -%}
         {% for name in meta_config.css_include.split() -%}
             {% set name = name.lower() %}
             {% set value = available_css.get(name) %}
@@ -71,60 +60,6 @@
 {%- endblock -%}
 
 {% block extrahead -%}
-    {#- Load global values into the local dict. Skip 'js' to not copy a reference -#}
-    {% for name, value in theme_nype_config.items() -%}
-        {% if name != 'js' -%}
-            {% set _ = page_nype_config.update({ name: value }) -%}
-        {% endif -%}
-    {% endfor -%}
-
-    {#- Load JavaScript separately to create new memory references -#}
-    {% if theme_nype_config.js -%}
-        {% for name, value in theme_nype_config.js.items() -%}
-            {% set _ = page_nype_config.js.update({ name.lower(): value }) -%}
-        {% endfor -%}
-    {% endif -%}
-
-    {#- Load values from meta_config, which can override globals. Skip 'js' to not copy a reference -#}
-    {% if has_meta_config -%}
-        {% for name, value in meta_config.items() -%}
-            {% if name != 'js' -%}
-                {% set _ = page_nype_config.update({ name.lower(): value }) -%}
-            {% endif -%}
-        {% endfor -%}
-    {% endif -%}
-
-    {# Incldue global 'non-js' values in the js of the current page #}
-    {% if has_meta_config and meta_config.js_include -%}
-        {% for name in meta_config.js_include.split() -%}
-            {% set name = name.lower() %}
-            {% set value = page_nype_config.get(name) %}
-            {% if not value and {}.__getitem__('ERROR: The value for page_nype_config.' ~ name ~ ' is undefined. File: ' ~ page.file.src_uri) %}{% endif %}
-            {% set _ = page_nype_config.js.update({ name.lower(): value })-%}
-        {% endfor -%}
-    {% endif %}
-    
-    {#- Pass the config from the page meta to JavaScript with lowercase variables. 
-        Allows to override global values per page and also can override the 'non-js' values above. -#}
-    {% if has_meta_config and meta_config.js -%}
-        {% for name, value in meta_config.js.items() -%}
-            {%- set _ = page_nype_config.js.update({ name.lower(): value })-%}
-        {% endfor -%}
-    {% endif -%}
-
-    {#- Validate all required keys are available. This can be set inside a macro template. -#}
-    {% for key in page_nype_config.required_js_keys %}
-        {% if key not in page_nype_config.js and {}.__getitem__('ERROR: The required key "' ~ key ~ '" is not available. File: ' ~ page.file.src_uri) %}{% endif %}
-    {% endfor %}
-    
-    {#- Obfuscate values that should not be in plain text in the HTML -#}
-    {% for name, value in page_nype_config.js.items() %}
-        {% if name.endswith("_hex") %}
-            {% set value = (value | obfuscate) %}
-        {% endif %}
-        {%- set _ = page_nype_config.js.update({ name: value })-%}
-    {% endfor %}
-
     {#- Set tags with external assets. Mostly for usage in plugins like latest_blog_post -#}
     {%- if page_nype_config.head_tags -%}
         {%- for head_tag in page_nype_config.head_tags -%}
@@ -164,7 +99,7 @@
 
     {#- Pass the config from the page meta to the CSS styles. Opt-in approach. -#}
     {% set container_ns = namespace(css='') -%}
-    {% if has_meta_config and meta_config.container_css -%}
+    {% if meta_config.container_css -%}
         {% for css_name in meta_config.container_css.strip().split() %}
             {% set container_ns.css = container_ns.css ~ ' nype-' ~ css_name -%}
         {% endfor %}
