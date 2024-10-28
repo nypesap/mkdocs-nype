@@ -35,33 +35,42 @@
 {#- nype_config of the Excerpt can contain overrides to some values -#}
 {% set post_nype_config = post.meta.nype_config or {} -%}
 
-{# store category separately for easier access later #}
+{# Store category separately for easier access later #}
 {% if blog_card_category_view -%}
   {% set blog_card_category = blog_card_category_view -%}
 {% elif post.meta.categories -%}
   {% set blog_card_category = post.meta.categories[0].strip() -%}
 {% endif -%}
 
-{# resolve category icon for card #}
-{% if post_nype_config.blog_card_icon -%}
-  {% set blog_card_icon = post_nype_config.blog_card_icon -%}
-{% elif blog_card_icons -%}
-  {% set blog_card_icon = blog_card_icons.get(blog_card_category, blog_card_icons._default) -%}
+{# Resolve category icon for card #}
+{% set blog_card_icon = post_nype_config.blog_card_icon or blog_card_icons.get(blog_card_category, blog_card_icons._default) or "material/file-document" -%}
+
+{#- Resolve page title -#}
+{% set blog_card_title = post_nype_config.blog_card_title or theme_nype_config.blog_card_title -%}
+
+{% if blog_card_title -%}
+  {% set blog_card_title = blog_card_title.format(post_title=post.post.title) -%}
+{% else -%}
+  {% set blog_card_title = post | post_card_title -%}
 {% endif -%}
 
-{% if not blog_card_icon -%}
-  {% set blog_card_icon = "material/file-document" -%}
+{#- Resolve page description -#}
+{% set blog_card_description = post_nype_config.blog_card_description or theme_nype_config.blog_card_description -%}
+
+{% if blog_card_description -%}
+  {% set blog_card_description = '<p>' ~ blog_card_description.format(post_description=post.meta.description) ~ '</p>' -%}
+{% else -%}
+  {% set blog_card_description = post | post_card_description -%}
+
+{# Resolve page read more prompt #}
+{% set blog_card_continue = post_nype_config.blog_card_continue or blog_card_continues.get(blog_card_category, blog_card_continues._default)-%}
+
+{% if blog_card_continue -%}
+  {% set blog_card_continue = blog_card_continue.format(category=blog_card_category) -%}
+{% else -%}
+  {% set blog_card_continue = lang.t("blog.continue")  -%}
 {% endif -%}
 
-{# resolve page read more prompt #}
-{% if post_nype_config.blog_card_continue -%}
-  {% set blog_card_continue = post_nype_config.blog_card_continue -%}
-{% elif blog_card_continues %}
-  {% set blog_card_continue = blog_card_continues.get(blog_card_category, blog_card_continues._default) -%}
-{% endif -%}
-
-{% if not blog_card_continue -%}
-  {% set blog_card_continue = lang.t("blog.continue") -%}
 {% endif -%}
 
 <!-- Post excerpt card -->
@@ -75,28 +84,20 @@
           {% include ".icons/" ~ blog_card_icon ~ ".svg" -%}
         </span>
         <strong>
-          {% if post_nype_config.blog_card_title -%}
-            {{ post_nype_config.blog_card_title.format(post_title=post.post.title) -}}
-          {% else -%}
-            {{ post | post_card_title -}}
-          {% endif -%}
+          {{- blog_card_title -}}
         </strong>
       </p>
       
       <hr>
       
-      {% if post_nype_config.blog_card_description -%}
-        <p>{{ post_nype_config.blog_card_description.format(post_description=post.meta.description) }}</p>
-      {% else %}
-        {{ post | post_card_description -}}
-      {% endif %}
+      {{ blog_card_description -}}
 
       <!-- Continue reading link -->
       {% if post.more and (blog_cards != "off" or not hide_read_more) %}
         <nav class="md-post__action">
           <a href="{{ post.url | url }}">
             <span class="twemoji">{% include ".icons/octicons/arrow-right-24.svg" %}</span>
-            {{ blog_card_continue.format(category=blog_card_category) -}}
+            {{ blog_card_continue -}}
           </a>
         </nav>
       {% endif %}

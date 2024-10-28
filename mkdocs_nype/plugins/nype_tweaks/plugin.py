@@ -30,7 +30,10 @@ post-card.html template.
 6. Create nype_config for page and sync with global tweak:
 This was previously done at render time in nype-base.html, but this is too late 
 for blog cards meta placeholders. To use the global value for the placeholder 
-better set it in the event.
+better set it in the event. Errata: Turned out this train of thought was wrong,
+as the posts' on_page events run after the blog index with the cards, so the
+tweak doesn't make things easier. Global placeholder loading was moved to the
+post-card.html template.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
