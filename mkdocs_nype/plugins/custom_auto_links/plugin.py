@@ -29,6 +29,19 @@ class CustomAutoLinksPlugin(BasePlugin[CustomAutoLinksConfig]):
             pattern=r'(?P<prefix>\s|\]\(|")(?P<proto>fal)://(?P<mode>\w!)?(?P<url>.*?)(?=\s|\)|")',
             flags=re.IGNORECASE | re.MULTILINE,
         )
+        self.fal_releases = {}
+
+    def on_config(self, config: MkDocsConfig) -> MkDocsConfig | None:
+
+        # Clear the dict between mkdocs serve runs
+        self.fal_releases.clear()
+
+        # Set up fal config
+        if self.config.fal.load_presets:
+            self.fal_releases.update(FAL_RELEASE_MAPPING)
+
+        if self.config.fal.releases_map:
+            self.fal_releases.update(self.config.fal.releases_map)
 
     @event_priority(100)
     def on_page_markdown(
@@ -61,29 +74,44 @@ class CustomAutoLinksPlugin(BasePlugin[CustomAutoLinksConfig]):
         url_no_params, *params = url.split("?")
         product_id, *md_release_id = url_no_params.rstrip("/").split("/")
 
+        # fal://F1234/1998_FPS01/SomethingElse not allowed
         if len(md_release_id) > 1:
             raise ValueError(
                 f"Too many '/' in the {match}, {md_release_id=}\nFile: {page.file.src_uri}"
             )
 
+        # 1998_FPS01 from fal://F1234/1998_FPS01 will be used
         if md_release_id:
             short_release_id = md_release_id[0]
+        # Extract the release_id from the tags in the file
         else:
             short_release_id = None
             meta_tags = page.meta.get("tags") or []
             for tag in meta_tags:
-                if tag.startswith("SAP S/4HANA"):
+                for pattern, rid in self.config.fal.tags_map.items():
+                    if re.match(pattern, tag, flags=re.IGNORECASE):
+                        short_release_id = rid
+                        break
+
+                if short_release_id:
+                    break
+
+                if tag.startswith("SAP S/4HANA") and tag != "SAP S/4HANA":
                     short_release_id = tag.replace("SAP S/4HANA", "", 1).strip().replace(" ", "_")
                     break
 
-        if not short_release_id:
+        # Nothing found in the URL or the tags, use fallback
+        if not short_release_id and self.config.fal.fallback_id:
+            short_release_id = self.config.fal.fallback_id
+        # No fallback, can't progress, raise error
+        elif not short_release_id:
             raise RuntimeError(
                 f"Could not find short_release_id for the {match}"
                 "\nThe issue could be a lack of 'tags' or a typo"
                 f"\nFile: {page.file.src_uri}"
             )
 
-        fal_release = FAL_RELEASE_MAPPING[short_release_id]
+        fal_release = self.fal_releases[short_release_id]
         href = f"https://fioriappslibrary.hana.ondemand.com/sap/fix/externalViewer/#/detail/Apps(%27{product_id}%27)/{fal_release}"
 
         el = etree.Element("a")
