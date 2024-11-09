@@ -9,7 +9,7 @@
         {% include ".icons/" ~ blog_category_icon ~ ".svg" -%}
       </div>
       <div class="nype-exploded-card-description">
-        <h2>{{ blog_category }}</h2>
+        <h2><a href="{{ blog_categories_url_map.get(blog_category) | url }}">{{ blog_category }}</a></h2>
         <p>
           <ul>
             {# post here is the Excerpt #}

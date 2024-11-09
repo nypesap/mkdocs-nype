@@ -35,6 +35,7 @@ def extend_blog():
     from material.plugins.blog import plugin as blog_plugin
 
     blog_plugin.BlogPlugin.on_config = wrap_blog_on_config(blog_plugin.BlogPlugin.on_config)
+    blog_plugin.BlogPlugin.on_files = wrap_blog_on_files(blog_plugin.BlogPlugin.on_files)
     blog_plugin.BlogPlugin.on_page_markdown = wrap_blog_on_page_markdown(
         blog_plugin.BlogPlugin.on_page_markdown
     )
@@ -54,6 +55,28 @@ def wrap_blog_on_config(func):
             raise PluginError(
                 f"blog_cards set to {blog_cards} also requires to set 'categories_allowed'"
             )
+
+        return result
+
+    return extended
+
+
+def wrap_blog_on_files(func):
+
+    def extended(self, files, *, config):
+
+        result = func(self, files, config=config)
+
+        # Prepare category -> url map to allow to set link for categories within index-grouped
+        self.config.categories_url_map = {}
+
+        for category in self.config.categories_allowed:
+            path = self._format_path_for_category(category)
+            file = files.get_file_from_path(path)
+            if not file:
+                continue
+
+            self.config.categories_url_map[category] = file.url
 
         return result
 
@@ -121,6 +144,7 @@ def wrap_blog_on_page_context(func):
                     context["blog_card_category_view"] = view.title
 
                 context["blog_categories_allowed"] = self.config.categories_allowed
+                context["blog_categories_url_map"] = self.config.categories_url_map
 
         return result
 
