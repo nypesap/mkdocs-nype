@@ -21,6 +21,7 @@ from material.plugins.blog.structure import Archive, Category, View
 from mkdocs.config.base import Config
 from mkdocs.config.config_options import Choice, Deprecated, DictOfItems, Optional, Type
 from mkdocs.exceptions import PluginError
+from mkdocs.plugins import event_priority
 
 
 def extend_blog():
@@ -63,6 +64,7 @@ def wrap_blog_on_config(func):
 
 def wrap_blog_on_files(func):
 
+    @event_priority(-50)
     def extended(self, files, *, config):
 
         result = func(self, files, config=config)
@@ -85,6 +87,7 @@ def wrap_blog_on_files(func):
 
 def wrap_blog_on_page_markdown(func):
 
+    @event_priority(-50)
     def extended(self, markdown: str, /, *, page, config, files):
 
         view = self._resolve_original(page)
@@ -123,6 +126,7 @@ def wrap_blog_on_page_markdown(func):
 
 def wrap_blog_on_page_context(func):
 
+    @event_priority(-100)
     def extended(self, context, *, page, config, nav):
 
         view = self._resolve_original(page)
