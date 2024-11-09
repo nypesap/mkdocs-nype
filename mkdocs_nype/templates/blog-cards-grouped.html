@@ -42,9 +42,10 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
     </header>
 
     <!-- Posts -->
-    {% if blog_cards == "index-grouped" %}
+    {% set index_part = blog_cards.split("+")[0] -%}
+    {% if index_part == "index-grouped" %}
       {% include "partials/posts-grouped.html" %}
-    {% elif blog_cards == "index-grouped-combo-a" %}
+    {% elif index_part == "index-grouped-combo-a" %}
       {% include "partials/posts-grouped.html" %}
       <div class="grid cards">
         <ul>
@@ -53,7 +54,7 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
           {% endfor %}
         </ul>
       </div>
-    {% elif blog_cards == "index-grouped-combo-b" %}
+    {% elif index_part == "index-grouped-combo-b" %}
       <div class="grid cards">
         <ul>
           {% for post in posts %}

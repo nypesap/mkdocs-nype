@@ -111,7 +111,9 @@ def wrap_blog_on_page_markdown(func):
 
         # Changes for all Views which belong to this Blog
         if blog_view:
-            if self.config.blog_cards == "all":
+            if self.config.blog_cards == "all" or (
+                view is not self.blog and self.config.blog_cards.endswith("+all")
+            ):
                 view.meta["template"] = "blog-cards.html"
 
         return result
@@ -151,6 +153,18 @@ def wrap_blog_on_page_context(func):
     return extended
 
 
+INDEX_VARIANTS = (
+    "index",
+    "index-grouped",
+    "index-grouped-combo-a",
+    "index-grouped-combo-b",
+)
+"""All of the index-only display variants"""
+
+INDEX_CARDS_WITH_CARD_CATEGORIES = tuple([f"{var}+all" for var in INDEX_VARIANTS])
+"""All of the index display variants + normal cards all"""
+
+
 class BlogConfig(blog_config.BlogConfig):
     """Default values of the new options should match standard mkdocs-material behaviour"""
 
@@ -167,7 +181,12 @@ class BlogConfig(blog_config.BlogConfig):
     """
 
     blog_cards = Choice(
-        ("off", "index", "index-grouped", "index-grouped-combo-a", "index-grouped-combo-b", "all"),
+        (
+            "off",  # Turned off
+            *INDEX_VARIANTS,
+            "all",  # Default cards for both index and category pages
+            *INDEX_CARDS_WITH_CARD_CATEGORIES,
+        ),
         default="off",
     )
     """
