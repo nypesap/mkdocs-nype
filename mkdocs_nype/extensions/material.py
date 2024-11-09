@@ -20,12 +20,13 @@ from material.plugins.blog import config as blog_config
 from material.plugins.blog.structure import Archive, Category, View
 from mkdocs.config.base import Config
 from mkdocs.config.config_options import Choice, Deprecated, DictOfItems, Optional, Type
+from mkdocs.exceptions import PluginError
 
 
 def extend_blog():
     """
     This function must be executed before the BlogPlugin class is created
-    and loaded into "Python memory" via some other "import"
+    and loaded into "MkDocs memory" via some other "import" during Plugin load
     """
 
     blog_config.BlogConfig = BlogConfig
@@ -33,12 +34,30 @@ def extend_blog():
     # After modifying the config, import BlogPlugin to make further changes
     from material.plugins.blog import plugin as blog_plugin
 
+    blog_plugin.BlogPlugin.on_config = wrap_blog_on_config(blog_plugin.BlogPlugin.on_config)
     blog_plugin.BlogPlugin.on_page_markdown = wrap_blog_on_page_markdown(
         blog_plugin.BlogPlugin.on_page_markdown
     )
     blog_plugin.BlogPlugin.on_page_context = wrap_blog_on_page_context(
         blog_plugin.BlogPlugin.on_page_context
     )
+
+
+def wrap_blog_on_config(func):
+
+    def extended(self, config):
+
+        result = func(self, config)
+
+        blog_cards = self.config.blog_cards
+        if blog_cards.startswith("index-grouped") and not self.config.categories_allowed:
+            raise PluginError(
+                f"blog_cards set to {blog_cards} also requires to set 'categories_allowed'"
+            )
+
+        return result
+
+    return extended
 
 
 def wrap_blog_on_page_markdown(func):
@@ -54,6 +73,8 @@ def wrap_blog_on_page_markdown(func):
         if view is self.blog:
             if self.config.blog_cards == "index":
                 view.meta["template"] = "blog-cards.html"
+            elif self.config.blog_cards.startswith("index-grouped"):
+                view.meta["template"] = "blog-cards-grouped.html"
 
         # Changes for all Views except for the Blog index root
         if blog_view and view is not self.blog:
@@ -99,6 +120,8 @@ def wrap_blog_on_page_context(func):
                 if isinstance(view, Category):
                     context["blog_card_category_view"] = view.title
 
+                context["blog_categories_allowed"] = self.config.categories_allowed
+
         return result
 
     return extended
@@ -119,7 +142,10 @@ class BlogConfig(blog_config.BlogConfig):
     of the post, like the date and categories
     """
 
-    blog_cards = Choice(("off", "index", "all"), default="off")
+    blog_cards = Choice(
+        ("off", "index", "index-grouped", "index-grouped-combo-a", "index-grouped-combo-b", "all"),
+        default="off",
+    )
     """
     Toggle the blog_cards to show on all Views or only the index page
     """

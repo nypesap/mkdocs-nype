@@ -1,0 +1,42 @@
+<div class="nype-exploded-cards">
+  <ul>
+    {% for blog_category in blog_categories_allowed %}
+    
+    {# Resolve category icon for card #}
+    {% set blog_category_icon = blog_card_icons.get(blog_category, blog_card_icons._default) or "material/file-document" -%}        
+    <li>
+      <div class="nype-exploded-card-icon">
+        {% include ".icons/" ~ blog_category_icon ~ ".svg" -%}
+      </div>
+      <div class="nype-exploded-card-description">
+        <h2>{{ blog_category }}</h2>
+        <p>
+          <ul>
+            {# post here is the Excerpt #}
+            {% for post in posts %}
+              {% if blog_category in post.meta.categories %}
+                {#- nype_config of the Excerpt can contain overrides to some values -#}
+                {% set post_nype_config = post.meta.nype_config or {} -%}
+
+                {#- Resolve post title -#}
+                {% set blog_card_title = post_nype_config.blog_card_title or theme_nype_config.blog_card_title -%}
+
+                {% if blog_card_title -%}
+                  {% set blog_card_title = blog_card_title.format(post_title=post.post.title) -%}
+                {% else -%}
+                  {% set blog_card_title = post | post_card_title -%}
+                {% endif -%}
+                <li>
+                  <a href="{{ post.url | url }}">
+                    {{ blog_card_title -}}
+                  </a>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
