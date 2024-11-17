@@ -35,6 +35,12 @@ as the posts' on_page events run after the blog index with the cards, so the
 tweak doesn't make things easier. Global placeholder loading was moved to the
 post-card.html template.
 
+7. Enable default tag icon tweak:
+The Material tags plugin allows to set icons for each tag, however there is 
+also the default icon, which isn't turned on without setting other icon mappings.
+The tweak sets the required settings to show the default icon on tags.
+https://github.com/squidfunk/mkdocs-material/issues/7688
+
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
@@ -94,6 +100,16 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
         # Extend macros includes directory tweak
         if not ServeMode.run_once:
             macros_module.FileSystemLoader = utils.get_file_system_loader
+
+        # Enable default tag icon tweak
+        if not config.theme.get("icon"):
+            config.theme["icon"] = {}
+        if not config.theme["icon"].get("tag"):
+            config.theme["icon"]["tag"] = {}
+        if not config.theme["icon"]["tag"].get("default"):
+            config.theme["icon"]["tag"]["default"] = "material/tag"
+        if not config.extra.get("tags"):
+            config.extra["tags"] = {"_": "_"}
 
         LOG.info("Tweaks initialized")
 
