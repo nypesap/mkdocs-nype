@@ -468,3 +468,36 @@
 }
 
 /* #endregion */
+
+/* #region footer_nav */
+
+.nype-footer-nav {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    font-size: .64rem;
+}
+
+.nype-footer-nav > ul:not([hidden]) {
+    display: inline-flex;
+    list-style: none;
+}
+
+@media screen and (max-width: 38em) {
+    .nype-footer-nav > ul:not([hidden]) {
+        display: initial;
+    }
+}
+
+.nype-footer-nav > ul:not([hidden]) > li {
+    margin: unset;
+    margin-left: .2rem;
+}
+
+.nype-footer-nav > ul:not([hidden]) > li::before {
+    content: "·";
+    margin-left: .2rem;
+    margin-right: .2rem;
+}
+
+/* #endregion */

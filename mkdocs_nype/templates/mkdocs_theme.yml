@@ -8,6 +8,7 @@ extends: material
 # - `{key}` {value} - any key with any value, though deep dictionaries will likely not be recursively added.
 #    contact_form_action_hex: value
 # - `old_prefix` str - for 404 page, old prefix to redirect old links from if not found
+# - `footer_nav` list(str | dict(str, str)) - paths to files to include in the footer nav / dict with title and path
 #
 # Additionally to global overrides pages can include:
 # - `container_css` str - (white)space separated names of `nype-{name}` CSS style classes that will influence the container.

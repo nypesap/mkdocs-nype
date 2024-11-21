@@ -41,6 +41,11 @@ also the default icon, which isn't turned on without setting other icon mappings
 The tweak sets the required settings to show the default icon on tags.
 https://github.com/squidfunk/mkdocs-material/issues/7688
 
+8. footer_nav tweak:
+To allow normal file system paths in the nype_config->footer_nav this tweak 
+needed to be implemented to convert the file system paths into the URLs used in
+the copyright.html template.
+
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
@@ -50,6 +55,7 @@ import sys
 
 import material
 from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.exceptions import PluginError
 from mkdocs.livereload import LiveReloadServer
 from mkdocs.plugins import BasePlugin, CombinedEvent, PrefixedLogger, event_priority
 from mkdocs.structure.files import Files
@@ -74,6 +80,11 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
         self.dest_url_mapping = {}
         self.draft_paths: GitIgnoreSpec = None
         self.nype_config_key = "nype_config"
+        self.default_footer_nav = {
+            "Contact": "contact.md",
+            "Impressum": "impressum.md",
+            "Offer": "offer.md",
+        }
 
     @event_priority(110)
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig | None:
@@ -118,9 +129,45 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
     ) -> macros_module.Environment | None:
         # HEX data obfuscation tweak
         env.filters["obfuscate"] = utils.obfuscate
+
         # blog cards tweak
         env.filters["post_card_title"] = utils.post_card_title
         env.filters["post_card_description"] = utils.post_card_description
+
+        # footer_nav tweak
+        footer_nav = config.theme.get("nype_config", {}).get("footer_nav")
+
+        # If the footer_nav is not defined, try to fill it in automatically
+        if footer_nav is None:
+            if config.theme.get("nype_config") is None:
+                config.theme["nype_config"] = {}
+
+            config.theme["nype_config"]["footer_nav"] = footer_nav = []
+
+            for title, path in self.default_footer_nav.items():
+                file = files.get_file_from_path(path)
+                if file:
+                    footer_nav.append({"title": title, "path": path})
+
+        for i, item in enumerate(footer_nav):
+
+            # Support both title: path dicts and pure path str
+            if isinstance(item, dict) and item.get("path") is None:
+                if len(item) > 1:
+                    raise PluginError(f"footer_nav value structure not supported: {item}")
+                key = next((key for key in item))
+                footer_nav[i] = item = {"title": key, "path": item[key]}
+            elif isinstance(item, str):
+                footer_nav[i] = item = {"title": None, "path": item}
+
+            file = files.get_file_from_path(item["path"])
+            if not file:
+                LOG.warning(f"footer_nav value {item['path']} doesn't link to a file")
+                continue
+
+            footer_nav[i]["path"] = file.page.url
+            if footer_nav[i]["title"] is None:
+                footer_nav[i]["title"] = file.page.title
 
     @event_priority(100)
     def on_template_context(
