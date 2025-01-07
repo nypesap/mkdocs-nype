@@ -404,6 +404,14 @@
     margin: 1em 0;
 }
 
+.excerpt-logo {
+    display: none;
+}
+
+.md-post--excerpt .excerpt-logo {
+    display: inline;
+}
+
 /* #endregion */
 
 /* #region exploded cards based on Material for MkDocs homepage mdx-expect */
