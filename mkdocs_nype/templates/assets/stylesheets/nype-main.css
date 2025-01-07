@@ -412,6 +412,18 @@
     display: inline;
 }
 
+.md-post--excerpt .excerpt-logo img {
+    float: right;
+}
+
+@media screen and (max-width: 38em) {
+    .md-post--excerpt .excerpt-logo img {
+        display: block;
+        float: unset;
+        margin: 0 auto;
+    }
+}
+
 /* #endregion */
 
 /* #region exploded cards based on Material for MkDocs homepage mdx-expect */
