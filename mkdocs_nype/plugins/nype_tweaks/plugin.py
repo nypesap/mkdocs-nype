@@ -276,7 +276,10 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                 disallow_paths.add(path)
 
         # Generate robots.txt tweak
-        sitemap_xml = config.site_url.rstrip("/") + "/sitemap.xml"
+        site_url = config.site_url if config.site_url else ""
+        if not site_url:
+            LOG.warning("Expected config.site_url to be set, was empty or none")
+        sitemap_xml = site_url.rstrip("/") + "/sitemap.xml"
         robots_txt = os.path.join(config.site_dir, "robots.txt")
         with open(robots_txt, "w", encoding="utf-8") as file:
             file.write(

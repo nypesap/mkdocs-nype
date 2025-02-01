@@ -6,7 +6,7 @@
 {% endif %}
 
 {# Fallback for setting the is_serve status #}
-{% if config.theme.is_serve is none %}
+{% if config.theme.is_serve is none and config.site_url %}
     {% set _ = config.theme.update({ 'is_serve': config.site_url.split('//')[1].split(':')[0] in ['127.0.0.1', 'localhost'] }) %}
 {% endif%}
 
