@@ -181,9 +181,18 @@ document.addEventListener("DOMContentLoaded", () => {
             _gNypeSendT("event", "show_email");
             const span = document.createElement("span");
             span.innerHTML = _gNypeConvertHexToString(emailHex);
-            const anchor = span.querySelector("a");
+            let anchor = span.querySelector("a");
             if (anchor && freeSubject) {
                 anchor.href = anchor.href.split("?subject=")[0] + `?subject=${freeSubject}`;
+            } else if (!anchor) {
+                anchor = document.createElement("a");;
+                anchor.href = `mailto:${span.innerHTML}`;
+                anchor.innerHTML = span.innerHTML;
+                if (freeSubject) {
+                    anchor.href = anchor.href + `?subject=${freeSubject}`;
+                }
+                span.innerHTML = "";
+                span.insertAdjacentElement("afterbegin", anchor);
             }
             showEmailToggle.replaceWith(span);
         });
