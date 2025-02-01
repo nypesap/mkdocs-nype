@@ -4,7 +4,7 @@ This __init__.py file gets loaded by MkDocs before plugins are initialized.
 Therefore, this is a good place to monkey-patch changes into the build process.
 
 load_plugin_with_namespace patch:
-Due to how themename/pluginname namespaces work to make using Nype projects more convenient 
+Due to how themename/pluginname namespaces work to make using Nype projects more convenient
 we change the logic of how namespaces are resolved. `pluginname` will be resolved in order:
 -> `nype/pluginname` -> `material/pluginname` -> `pluginname`
 

@@ -23,7 +23,7 @@ jobs:
           python-version: 3
           cache: pip
       - name: Install style-check deps
-        run: pip install isort black
+        run: python .github/scripts/install_dev_deps.py
       - name: Run style-check tests
         run: |
           isort mkdocs_nype/ --check

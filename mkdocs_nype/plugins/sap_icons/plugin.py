@@ -7,8 +7,8 @@ The icons are taken from the https://github.com/SAP/ui5-webcomponents/ repositor
 ICON_JSONS_URLS at the bottom of the file store URLs to fetch that contain JSON file with SVG paths.
 Those paths are injected into a <svg> tag with a viewBox of 0 0 512 512
 
-The plugin overrides the FileSystemLoader.get_source function to inject the SVGs when accessed via 
-Jinja templates. The logic tries to load the files from the filesystem, but then falls back to 
+The plugin overrides the FileSystemLoader.get_source function to inject the SVGs when accessed via
+Jinja templates. The logic tries to load the files from the filesystem, but then falls back to
 processing the loaded virtual indexes.
 
 Additionally, there are Nype icons/emojis injected as well.

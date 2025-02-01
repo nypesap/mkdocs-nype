@@ -34,7 +34,7 @@ def main():
 
     print(f"{dev_version=}")
     print(f"{main_version=}")
-    
+
     if dev_version == main_version:
         sys.exit(
             "Versions between dev and main branch match."

@@ -29,8 +29,8 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-    "black~=24.4.2",
-    "isort~=5.13.2"
+    "black~=25.1.0",
+    "isort~=6.0"
 ]
 
 [project.urls]

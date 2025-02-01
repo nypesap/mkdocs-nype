@@ -3,15 +3,15 @@
 Works through being invoked from the mkdocs-nype __init__.py file
 before the mkdocs-material plugins get to load etc.
 
-In some cases, mkdocs-material plugins lack configurability and typically 
-this issue is solved by adding another plugin with its own configuration 
+In some cases, mkdocs-material plugins lack configurability and typically
+this issue is solved by adding another plugin with its own configuration
 that later overrides stuff during the MkDocs event loop.
 
-However, some of those cases don't make much sense as a separate plugin with 
+However, some of those cases don't make much sense as a separate plugin with
 its own event loop, so this module aims to add those micro adjustments.
 
 1. Extend the blog config class to be able to configure more options.
-2. Monkey-patch some events to add logic before or after their execution. 
+2. Monkey-patch some events to add logic before or after their execution.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """

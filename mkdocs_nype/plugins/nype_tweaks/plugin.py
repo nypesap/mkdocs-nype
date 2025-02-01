@@ -9,7 +9,7 @@ raw slugs and 2 pages can have the same slug.
 
 2. Theme __init__.py issue count handler tweak:
 When the --strict flag is used, warnings from the theme __init__.py were ignored.
-This tweak fixes it. TODO There is probably a better way, because if nype_tweaks 
+This tweak fixes it. TODO There is probably a better way, because if nype_tweaks
 won't run automatically, due to an error, then this tweak will not be applied.
 
 3. Extend macros includes directory tweak:
@@ -18,31 +18,31 @@ Jinja2.loaders.FileSystemLoader supports a list of paths, so override the macros
 plugin reference to FileSystemLoader.
 
 4. HEX data obfuscation tweak:
-Some data should be obfuscated in plain HTML to make it harder for bots to scrape 
-them. The obfuscation happens just before passing data to JavaScript. Later on 
+Some data should be obfuscated in plain HTML to make it harder for bots to scrape
+them. The obfuscation happens just before passing data to JavaScript. Later on
 this data is deobfuscated in JavaScript.
 
 5. Blog cards tweak:
 To convert a normal blog post Excerpt to a Grid Card some HTML needs to be read
-from the page.content. The provided filter functions get called in the 
+from the page.content. The provided filter functions get called in the
 post-card.html template.
 
 6. Create nype_config for page and sync with global tweak:
-This was previously done at render time in nype-base.html, but this is too late 
-for blog cards meta placeholders. To use the global value for the placeholder 
+This was previously done at render time in nype-base.html, but this is too late
+for blog cards meta placeholders. To use the global value for the placeholder
 better set it in the event. Errata: Turned out this train of thought was wrong,
 as the posts' on_page events run after the blog index with the cards, so the
 tweak doesn't make things easier. Global placeholder loading was moved to the
 post-card.html template.
 
 7. Enable default tag icon tweak:
-The Material tags plugin allows to set icons for each tag, however there is 
+The Material tags plugin allows to set icons for each tag, however there is
 also the default icon, which isn't turned on without setting other icon mappings.
 The tweak sets the required settings to show the default icon on tags.
 https://github.com/squidfunk/mkdocs-material/issues/7688
 
 8. footer_nav tweak:
-To allow normal file system paths in the nype_config->footer_nav this tweak 
+To allow normal file system paths in the nype_config->footer_nav this tweak
 needed to be implemented to convert the file system paths into the URLs used in
 the copyright.html template.
 

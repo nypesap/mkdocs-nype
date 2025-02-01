@@ -9,8 +9,8 @@ This plugin adds another for a Custom view.
 A lot of the code is based from the plugin as those instructions aren't in importable functions.
 
 NOTE:
-- This only generates the "back-end" Python data structures, the user has to add overrides for 
-  blog*.html templates. Use page.code_name or view.code_name to access the list of attached pages. 
+- This only generates the "back-end" Python data structures, the user has to add overrides for
+  blog*.html templates. Use page.code_name or view.code_name to access the list of attached pages.
   (where code_name is the defined name in mkdocs.yml)
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
