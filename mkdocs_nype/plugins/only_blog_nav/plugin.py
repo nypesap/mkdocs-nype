@@ -1,7 +1,8 @@
 """MkDocs plugin made to hide non-blog navigation entries when displaying a blog.
 
 This plugin was formerly a hook:
-- https://github.com/fioritracker/fioritracker.github.io/blob/3b6fb6ac0dea48aa40a8593fd94cce60d26a689c/overrides/hooks/display_blog_nav_only.py
+
+- https://github.com/Fiori-Tracker/fioritracker.github.io/blob/3b6fb6ac0dea48aa40a8593fd94cce60d26a689c/overrides/hooks/display_blog_nav_only.py
 
 MIT License Kamil Krzyśków (HRY) for Nype (npe.cm) and Fiori Tracker (fioritracker.org)
 """

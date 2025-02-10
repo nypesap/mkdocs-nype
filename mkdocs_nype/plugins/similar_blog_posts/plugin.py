@@ -1,3 +1,23 @@
+"""MkDocs plugin made to automatically link related Blog posts
+
+The ideation for the plugin was supported by ChatGPT, which suggested the usage of Jaccard Similarity
+index method to calculate the relation score of the blog posts.
+
+Calculating a static correlative number and ranking the relatedness of the posts allows to avoid
+random selection purely based on same categories. A purely random selection would change the order
+of the linked posts between MkDocs builds / deployments creating SEO noise.
+
+If there is not enough similar posts, the plugin allows to fill up the list with not related posts.
+This is random, but with the seed being the date of the post to prevent same results in similar cases,
+while still stabilizing the results.
+
+Can be seen in use here:
+
+- https://fioritracker.org/usecases/preparation-for-upgrade/
+
+MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm) and Fiori Tracker (fioritracker.org)
+"""
+
 import logging
 import random
 from pathlib import Path

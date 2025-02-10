@@ -1,7 +1,7 @@
-# MkDocs Nype theme
+# Nype's theme for MkDocs
 
-This theme package was made to simplify mangaging dependencies, and sync hook 
-extensions between all [MkDocs] websites maintained by [Nype]. 
+This theme package was made to simplify mangaging dependencies, and sync hook
+extensions between all [MkDocs] websites maintained by [Nype].
 
 This theme extends the [Material for MkDocs] theme and adds custom modifications.
 
@@ -20,10 +20,12 @@ This theme extends the [Material for MkDocs] theme and adds custom modifications
 - [Fiori Tracker] - Tool for tracking SAP Fiori launchpad applications
 - [Fiori App Usage] - Tool for collecting SAP Fiori application insights
 - [Fiori Role Testing] - Tool for spotting untested SAP Fiori apps
+- [Theme Reference] - Documentation of this theme
 
 [Fiori Tracker]: https://fioritracker.org/?ref=theme
 [Fiori App Usage]: https://help.fioriappsusage.org/?ref=theme
 [Fiori Role Testing]: https://fioriroletesting.com/?ref=theme
+[Theme Reference]: https://nypesap.github.io/mkdocs-nype/
 
 ## License
 

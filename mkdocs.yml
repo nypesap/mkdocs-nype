@@ -1,0 +1,105 @@
+site_name: mkdocs-nype docs
+site_url: https://nypesap.github.io/mkdocs-nype/
+
+repo_name: nypesap/mkdocs-nype
+repo_url: https://github.com/nypesap/mkdocs-nype/
+
+# blob/ opens the View mode on GitHub, but not the Raw form
+# dev/ branch of the repository
+# docs/ paths are relative to this directory
+edit_uri: blob/dev/docs/
+
+copyright: Copyright &copy; {year} <a href="https://npe.cm" target="_blank">Nype</a>
+
+theme:
+  name: nype
+  custom_dir: docs_overrides
+  palette:
+    - scheme: slate
+  icon:
+    repo: fontawesome/brands/github
+    edit: octicons/file-code-16
+  favicon: favicon.ico
+  logo: favicon.png
+  features:
+    - content.action.edit
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.sections
+    # - navigation.expand
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs_overrides/hooks/gen_docs_files.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - macros
+  - mkdocstrings:
+      custom_templates: docs_overrides/mkdocstrings_templates
+      handlers:
+        python:
+          options:
+            heading_level: 1  # Use identifier as title, and save on headings depth
+            line_length: 80  # Closer to actual width
+            members: true  # Show all, including _private variables
+            members_order: source  # Easier to follow inheritance than with alphabetical
+            merge_init_into_class: true  # Removes empty __init__ in classes
+            separate_signature: true  # Easier to read
+            show_category_heading: false  # Categories waste headings
+            show_if_no_docstring: true  # Not all attributes need a docstring, but show them
+            show_labels: false  # Less noise
+            show_root_heading: true  # Use as page title
+            show_signature_annotations: true  # Display types like `bool` etc.
+            show_source: false  # Less noise
+            show_symbol_type_heading: true  # Must have without the categories / labels
+            show_symbol_type_toc: true  # Easier to navigate
+
+hooks:
+  - docs_overrides/hooks/load_external_docs.py
+  - docs_overrides/hooks/scope_currentcolor_css.py
+  - docs_overrides/hooks/modify_mkdocstrings.py
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.fancylists
+  - pymdownx.highlight:
+      anchor_linenums: true      
+  - pymdownx.magiclink
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      anchorlink: true  # Instead of permalink
+      # permalink: "📌"  # Due to long code titles, headings wrap around, and this icon adds random gaps
+
+extra:
+  social:
+    - icon: nype/nype-logo
+      link: https://npe.cm
+      name: Nype Brand Site
+    - icon: nype/fioritracker-logo
+      link: https://fioritracker.org/
+      name: Fiori Tracker
+    - icon: nype/appusage-logo
+      link: https://help.fioriappsusage.org/
+      name: Fiori App Usage
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+nav:
+  - Home:
+      - index.md
+      - development/index.md
+      - license.md
+  # Reference is managed via `literate-nav` and `gen_docs_files.py`
+  - Reference: reference/

@@ -32,6 +32,11 @@ dev = [
     "black~=25.1.0",
     "isort~=6.0"
 ]
+docs = [
+    "mkdocstrings[python] @ git+https://github.com/mkdocstrings/mkdocstrings.git@4ab180d01964c3ef8005cd72c8d91ba3fd241e27",
+    "mkdocs-gen-files @ git+https://github.com/oprypin/mkdocs-gen-files.git@85d56eb8ed6eccf1528ca158dbf97c8f0b6bb72e",
+    "mkdocs-literate-nav @ git+https://github.com/oprypin/mkdocs-literate-nav.git@12f9f79e8ce5d6ee2c934e7787d20d0f055e4c50"
+]
 
 [project.urls]
 Source = "https://github.com/nypesap/mkdocs-nype"
@@ -59,6 +64,9 @@ Issues = "https://github.com/nypesap/mkdocs-nype/issues"
 
 [project.entry-points."mkdocs.themes"]
 nype = "mkdocs_nype.templates"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.metadata.hooks.requirements_txt]
 filename = "requirements.txt"

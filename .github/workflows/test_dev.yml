@@ -54,7 +54,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
-          pip install .
+          pip install ".[docs]"
   check-repos:
     needs: cache-init
     runs-on: ubuntu-latest
@@ -101,6 +101,48 @@ jobs:
             mkdocs-material-
       - run: venv/bin/python -m mkdocs_nype --minify --inject-minified
       - run: venv/bin/python -m mkdocs build --strict
+  docs:
+    needs: check-repos
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout Dev
+        uses: actions/checkout@v4
+      - name: Install Python
+        id: install-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3
+          cache: pip
+      - name: Process Python Cache
+        id: cache-requirements
+        uses: actions/cache@v4
+        with:
+          path: venv
+          key: requirements-${{ steps.install-python.outputs.python-version }}-${{ hashFiles('requirements*.txt', 'mkdocs_nype/**') }}
+          restore-keys: |
+            requirements-${{ steps.install-python.outputs.python-version }}
+      - name: Create dummy cache file
+        run: mkdir -p .cache; echo mkdocs-material > .cache/safe
+      - name: Process Material for MkDocs Cache
+        uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ hashfiles('.cache/**') }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+      - name: Run theme pre-build scripts
+        run: venv/bin/python -m mkdocs_nype --minify --inject-minified
+      - name: Build site
+        run: venv/bin/python -m mkdocs build --strict
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
   # after-repos:
   #   needs: check-repos
   #   runs-on: ubuntu-latest

@@ -1,17 +1,18 @@
 """MkDocs plugin made to add SAP icons to the Material emoji index.
 
 This plugin was formerly a hook:
+
 - https://github.com/nypesap/nypesap.github.io/blob/9951b6669868c657874740c6a124213785441864/overrides/hooks/sap_icons.py
 
 The icons are taken from the https://github.com/SAP/ui5-webcomponents/ repository.
 ICON_JSONS_URLS at the bottom of the file store URLs to fetch that contain JSON file with SVG paths.
-Those paths are injected into a <svg> tag with a viewBox of 0 0 512 512
+Those paths are injected into a `<svg>` tag with a viewBox of 0 0 512 512
 
-The plugin overrides the FileSystemLoader.get_source function to inject the SVGs when accessed via
+The plugin overrides the `FileSystemLoader.get_source` function to inject the SVGs when accessed via
 Jinja templates. The logic tries to load the files from the filesystem, but then falls back to
 processing the loaded virtual indexes.
 
-Additionally, there are Nype icons/emojis injected as well.
+Additionally, there are some Nype icons/emojis injected as well.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
@@ -244,7 +245,7 @@ WEEK: int = dt.datetime.now(dt.timezone.utc).isocalendar().week
 ICON_JSONS_URLS: list[str] = [
     "https://raw.githubusercontent.com/SAP/ui5-webcomponents/main/packages/icons/src/v5/SAP-icons.json"
 ]
-"""List with links to JOSN files that contain SVG icon paths"""
+"""List with links to JSON files that contain SVG icon paths"""
 
 ICON_INDEXES: list[dict[str, dict]] = []
 """Global list to store the indexes, filled later in event"""

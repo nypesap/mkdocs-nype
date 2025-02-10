@@ -1,0 +1,43 @@
+{% extends "_base/module.html.jinja" %}
+
+{% block docstring scoped %}
+
+{# 
+    heading_level can't be modified from here, every time the initial global value is used.
+    Hence, this is adjusted to the mkdocs.yml config, where heading_level is set to 1, and
+    therefore, the root module heading is at level 1 and everything below it starts at 2, so
+    the helper headings also start at 2 on the same level as other children. Not ideal from,
+    a HTML ordering standpoint, but good enough to separate content.
+#}
+
+{% if module.docstring.parsed %}
+    {% filter 
+        heading(
+            heading_level=2,
+            id="docstring.Synopsis",
+            toc_label="Synopsis",
+            hidden=False,
+        ) 
+    %}
+    <span class="mkdocstring-heading">Synopsis</span>
+    {% endfilter %}
+{% endif %}
+
+{{ super() }}
+
+{% if module.docstring.parsed %}
+<div style="height: 0; width: 75%; margin: 1.6em auto 0; border-bottom: 2px dashed var(--md-typeset-color);"></div>
+{% endif %}
+
+{# {% filter 
+    heading(
+        heading_level=2,
+        id="docstring.Definitions",
+        toc_label="Definitions",
+        hidden=False,
+    ) 
+%}
+<span class="mkdocstring-heading">Definitions</span>
+{% endfilter %} #}
+
+{% endblock %}

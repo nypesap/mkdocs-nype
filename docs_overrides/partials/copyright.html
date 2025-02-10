@@ -1,0 +1,71 @@
+{#-
+  Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+-#}
+
+{#-
+  Modified for mkdocs-nype, last checked up-to-date with mkdocs-material 9.5.39
+  
+  - Added a div wrapper for the generator info
+  - Added support for footer navigation, controlled from mkdocs.yml, and "preprocessed" in `nype_tweaks`
+  - Added mkdocstrings, as the theme docs are generated with it
+
+  MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
+-#}
+
+{#- Copyright and theme information -#}
+<div class="md-copyright">
+  {% if config.copyright %}
+    <div class="md-copyright__highlight">
+      {{ config.copyright }}
+    </div>
+  {% endif %}
+  {% if not config.extra.generator == false %}
+    <div>
+      Made with
+      <a
+        href="https://squidfunk.github.io/mkdocs-material/"
+        target="_blank" rel="noopener"
+      >
+        Material for MkDocs
+      </a>
+      and
+      <a
+        href="https://mkdocstrings.github.io/"
+        target="_blank" rel="noopener"
+      >
+        mkdocstrings
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{#- Footer navigation -#}
+{% if config.theme.nype_config.footer_nav -%}
+  <nav class="nype-footer-nav">
+    <ul>
+      {% for item in config.theme.nype_config.footer_nav -%}
+        <li>
+          <a href="{{ item.path | url }}">{{ item.title }}</a>
+        </li>
+      {% endfor -%}
+    </ul>
+  </nav>
+{% endif -%}
