@@ -1,7 +1,9 @@
 """MkDocs plugin made to handle custom links in Markdown and render them.
 
-This is made as a plugin instead of a Markdown Extension, because we need to access page.meta.tags from MkDocs.
-We could pass the page.meta object via mdx_configs to a Markdown Extension, however this would add complexity.
+This is made as a plugin instead of a Markdown Extension, because we need to access `page.meta.tags` from MkDocs.
+We could pass the `page.meta` object via `mdx_configs` to a Markdown Extension, however this would add complexity.
+
+Currently the `fal://` protocol is supported which points to https://fioriappslibrary.hana.ondemand.com
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """

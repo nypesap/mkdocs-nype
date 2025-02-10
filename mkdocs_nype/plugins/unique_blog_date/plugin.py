@@ -1,6 +1,7 @@
 """MkDocs plugin made to patch the date in a material/blog plugin instance.
 
 This plugin was formerly a hook:
+
 - https://github.com/nypesap/nypesap.github.io/blob/9951b6669868c657874740c6a124213785441864/overrides/hooks/patch_blog_date.py
 
 By default when using multiple blog instances the `post_date_format` option of the last instance

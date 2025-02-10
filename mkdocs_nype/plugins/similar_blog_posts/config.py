@@ -28,7 +28,10 @@ class SimilarBlogPostsConfig(Config):
     """A single value or list of matching blog_dir prefixes"""
 
     append_at = Choice(("start", "end"), default="end")
+    """Where to add the section"""
+
     title = Type(str)
+    """Title of the section"""
 
     similarity_threshold = Type(float, default=0.32)
     """Float number between 0 and 1 to decide if the posts should be considered similar"""

@@ -1,3 +1,12 @@
+"""MkDocs plugin, which adds CTA sections with a given prompt
+
+Can be seen in use here:
+
+- https://npe.cm/projects/my-inbox-f0862-integration/
+
+MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
+"""
+
 import logging
 import os
 from pathlib import Path
@@ -41,7 +50,7 @@ class CustomCallToActionSectionsPlugin(BasePlugin[CustomCallToActionSectionsConf
     def on_page_markdown(
         self, markdown: str, /, *, page: Page, config: MkDocsConfig, files: Files
     ) -> str | None:
-        """Add the section to a file file"""
+        """Add the section to a page"""
 
         for path in self.sanitized_paths:
             if path.is_file() and page.file.abs_src_path == str(path):

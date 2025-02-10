@@ -1,21 +1,28 @@
 """MkDocs Nype theme, based on the Material for MkDocs theme.
 
-This __init__.py file gets loaded by MkDocs before plugins are initialized.
+This `__init__.py` file gets loaded by MkDocs before plugins are initialized.
 Therefore, this is a good place to monkey-patch changes into the build process.
 
-load_plugin_with_namespace patch:
-Due to how themename/pluginname namespaces work to make using Nype projects more convenient
+**Consider both `nype/` and `material/` namespaces when loading plugins**
+
+Due to how `themename/pluginname` namespaces work to make using Nype projects more convenient
 we change the logic of how namespaces are resolved. `pluginname` will be resolved in order:
--> `nype/pluginname` -> `material/pluginname` -> `pluginname`
 
-run_validation_with_nype_injection patch:
-Instead of manually setting and enabling a plugin, every project would benefit from an
-automatically enabled plugin at runtime that does some kind of validation during the event
-loop, or enable any recommended plugin markdown extension in each project.
+1. `nype/pluginname`
+2. `material/pluginname`
+3. `pluginname`
 
-material extensions:
-Instead of configuring other plugins and overriding internals of mkdocs-material plugins
-extend them before they're loaded into "Python memory"
+**Inject predefined plugins for loading even when they're not in `mkdocs.yml`**
+
+Instead of requiring to enable a plugin in a project `mkdocs.yml`, enable it by default.
+This allows `nype_tweaks` to operate as a project manager for the entirety of the event loop.
+
+**Extend Material theme plugins directly**
+
+Instead of configuring other plugins and overriding internals of mkdocs-material plugins during
+the event loop, extend them before they're loaded into "Python MkDocs memory". This allows to directly
+modify how the PluginConfig is resolved, therefore allows to add options directly under the
+extended plugin in `mkdocs.yml` instead of under another plugin.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
@@ -39,13 +46,14 @@ from .extensions import material as material_extension
 LOG: PrefixedLogger = PrefixedLogger("mkdocs_nype", logging.getLogger(f"mkdocs.themes.mkdocs_nype"))
 
 issue_counter = CountHandler()
-"""This is fetched in nype_tweaks to trigger --strict flag based on __init__.py"""
+"""This is fetched in `nype_tweaks` to trigger `--strict` flag based on `__init__.py`"""
 
 issue_counter.setLevel(logging.WARNING)
 LOG.logger.addHandler(issue_counter)
 
 
 def patch_plugin_loading():
+    """Monkey patches the `load_plugin_with_namespace` function after confirming that the hash is the same."""
 
     if not hasattr(Plugins, "load_plugin_with_namespace"):
         LOG.error(
@@ -66,7 +74,7 @@ def patch_plugin_loading():
 
 
 def load_plugin_with_namespace(self, name: str, config):
-    """Adapted code from the MkDocs 1.6.0 repository"""
+    """Adapted code from the MkDocs 1.6.0 repository. Modification adds `material/pluginname` fallback."""
 
     if "/" in name:  # It's already specified with a namespace.
         # Special case: allow to explicitly skip namespaced loading:
@@ -91,6 +99,8 @@ def load_plugin_with_namespace(self, name: str, config):
 
 
 def patch_default_plugins_auto_load():
+    """Monkey patches the `run_validation` function after confirming that the hash is the same."""
+
     if not hasattr(Plugins, "run_validation"):
         LOG.error(
             "MkDocs doesn't expose run_validation anymore, default plugin auto load patch not applied"
@@ -108,7 +118,7 @@ def patch_default_plugins_auto_load():
 
 
 def run_validation(self, value: object) -> mkdocs.plugins.PluginCollection:
-    """Adapted code from the MkDocs 1.6.0 repository"""
+    """Adapted code from the MkDocs 1.6.0 repository. Modification adds `nype_tweaks` plugin when missing."""
 
     if not isinstance(value, (list, tuple, dict)):
         raise ValidationError("Invalid Plugins configuration. Expected a list or dict.")

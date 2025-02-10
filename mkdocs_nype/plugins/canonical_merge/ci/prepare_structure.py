@@ -1,7 +1,7 @@
 """Small CI script to shift docs files around and to adjust mkdocs.yml
 
 That's the second iteration of "How to change directories around and not lose SEO ranking" strategy.
-It works in unison with the `canonical_merge.py` hook.
+It works in unison with the `canonical_merge` plugin.
 It should be run in the root of the project.
 
 MIT Licence 2024 Kamil Krzyśków (HRY) for Nype (npe.cm) and Fiori Tracker (fioritracker.org)

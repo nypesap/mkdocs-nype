@@ -1,6 +1,7 @@
 """MkDocs plugin made to allow to change the logo in the material/social plugin.
 
 This plugin was formerly a hook:
+
 - https://github.com/nypesap/nypesap.github.io/blob/9951b6669868c657874740c6a124213785441864/overrides/hooks/change_logo_for_social_cards.py
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)

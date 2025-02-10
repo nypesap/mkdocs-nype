@@ -1,3 +1,15 @@
+"""MkDocs plugin made to generate file with back-end redirects
+
+The best way to handle a redirection is to respond with a 301 status code
+and point the traffic to that location, instead of loading a 200 / 404 status
+code page with a meta-refresh / JavaScript redirect.
+
+This plugin generates an Nginx compliant redirects mapping, which is then
+loaded after deployment.
+
+MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
+"""
+
 import logging
 from pathlib import Path
 

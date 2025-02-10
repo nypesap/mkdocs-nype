@@ -1,6 +1,6 @@
 """mkdocs-material extension module
 
-Works through being invoked from the mkdocs-nype __init__.py file
+Works through being invoked from the mkdocs-nype `__init__.py` file
 before the mkdocs-material plugins get to load etc.
 
 In some cases, mkdocs-material plugins lack configurability and typically
@@ -10,8 +10,8 @@ that later overrides stuff during the MkDocs event loop.
 However, some of those cases don't make much sense as a separate plugin with
 its own event loop, so this module aims to add those micro adjustments.
 
-1. Extend the blog config class to be able to configure more options.
-2. Monkey-patch some events to add logic before or after their execution.
+1. Extend the `BlogConfig` class to be able to configure more options.
+2. Monkey-patch some events to add logic before or after their execution to use the new options.
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
@@ -26,7 +26,7 @@ from mkdocs.plugins import event_priority
 
 def extend_blog():
     """
-    This function must be executed before the BlogPlugin class is created
+    This function must be executed before the `BlogPlugin` class is created
     and loaded into "MkDocs memory" via some other "import" during Plugin load
     """
 
@@ -174,8 +174,8 @@ class BlogConfig(blog_config.BlogConfig):
 
     hide_read_more = Type(bool, default=False)
     """
-    Used later in templates to decide if the blog Views should show the read
-    more link for Excerpts
+    Used later in templates to decide if the blog `View`s should show the read
+    more link for `Excerpt`s
     """
 
     hide_post_metadata = Type(bool, default=False)
@@ -194,17 +194,17 @@ class BlogConfig(blog_config.BlogConfig):
         default="off",
     )
     """
-    Toggle the blog_cards to show on all Views or only the index page
+    Toggle the blog_cards to show on all `View`s or only the index page
     """
 
     blog_card_continues = DictOfItems(Type(str), default={})
     """
     Mapping of category names to Continue Reading messages used in templates for
-    the blog post cards. _default key is reserved for the Default value.
+    the blog post cards. `_default` key is reserved for the Default value.
     """
 
     blog_card_icons = DictOfItems(Type(str), default={})
     """
     Mapping of category names to icon paths used in templates for the blog post
-    cards. _default key is reserved for the Default value.
+    cards. `_default` key is reserved for the Default value.
     """

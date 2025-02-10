@@ -1,6 +1,7 @@
 """MkDocs plugin made to replace the HTML template used in the redirects plugin.
 
 This plugin was formerly a hook:
+
 - https://github.com/nypesap/nypesap.github.io/blob/9951b6669868c657874740c6a124213785441864/overrides/hooks/adjust_redirects_html.py
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)

@@ -1,6 +1,7 @@
 """MkDocs plugin made to add a custom categorization to the material/blog plugin.
 
 This plugin was formerly a hook:
+
 - https://github.com/nypesap/nypesap.github.io/blob/9951b6669868c657874740c6a124213785441864/overrides/hooks/add_industry_blog_view.py
 
 By default the blog plugin only allows to use Archive and Category views.
@@ -8,10 +9,10 @@ This plugin adds another for a Custom view.
 
 A lot of the code is based from the plugin as those instructions aren't in importable functions.
 
-NOTE:
-- This only generates the "back-end" Python data structures, the user has to add overrides for
-  blog*.html templates. Use page.code_name or view.code_name to access the list of attached pages.
-  (where code_name is the defined name in mkdocs.yml)
+!!! note
+    - This only generates the "back-end" Python data structures, the user has to add overrides for
+    blog*.html templates. Use page.code_name or view.code_name to access the list of attached pages.
+    (where code_name is the defined name in mkdocs.yml)
 
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
