@@ -286,7 +286,7 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                 "\n".join(
                     [
                         "User-agent: *",
-                        "Disallow: /ggl-db/",
+                        "Disallow: /ggl-db/",  # ggl - Google Analytics
                         "Disallow: /ggl-ggl/",
                         "Disallow: /ggl-tdb/",
                         "Disallow: /ggl-syn/",
@@ -294,6 +294,7 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
                         "Disallow: /ggl-as2-str/",
                         "Disallow: /ggl-a2-/",
                         "Disallow: /ggl-a-/",
+                        "Disallow: /nr/",  # nr - Nype Redirect
                         *([f"Disallow: {p}" for p in disallow_paths] + [""]),
                         f"Sitemap: {sitemap_xml}",
                     ]
