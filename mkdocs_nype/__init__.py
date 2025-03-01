@@ -23,8 +23,10 @@ MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 import hashlib
 import inspect
 import logging
+import os
 import re
 from collections import Counter
+from dataclasses import dataclass
 
 import mkdocs
 from mkdocs.config.base import ValidationError
@@ -114,27 +116,35 @@ def run_validation(self, value: object) -> mkdocs.plugins.PluginCollection:
     if not isinstance(value, list):
         raise NotImplementedError("The injection was only implemented for list-based plugins")
 
-    plugin_names = set()
-    wanted_plugins: tuple[tuple[str]] = (("nype", "nype_tweaks"),)
-    """Tuple of tuples with (scope, plugin_name). Scope can be None"""
+    plugin_map: dict[str, dict] = {}
 
-    # self._parse_configs modifies the internals of `value`, so use it directly
-    for entry in value:
+    # self._parse_configs modifies the internals of `value`, so use it directly with references
+    for i, entry in enumerate(value):
         if isinstance(entry, str):
-            plugin_names.add(entry)
+            # side effect, change form to dict to override more easily later
+            value[i] = {entry: {}}
+            plugin_map[entry] = value[i][entry]
         else:
-            plugin_names.add(next(iter(entry)))
+            plugin_map.update(entry)
 
-    for scope, name in wanted_plugins:
+    for wanted_plugin in WANTED_PLUGINS:
+        name = wanted_plugin.name
+        scope = wanted_plugin.scope
+        config = wanted_plugin.config or {}
+
         variants = [name]
         if scope:
             variants.insert(0, f"{scope}/{name}")
 
         for variant in variants:
-            if variant in plugin_names:
+            if variant in plugin_map:
+                # Override config as needed
+                plugin_map[variant].update(config)
+                LOG.info(f"Updated config for {variants[0]} plugin")
                 break
         else:
-            value.append(variants[0])
+            value.append({variants[0]: {**config}})
+            LOG.info(f"Injected {variants[0]} plugin")
 
     self.plugins = mkdocs.plugins.PluginCollection()
     self._instance_counter = Counter()
@@ -159,6 +169,45 @@ def _get_checksum(source: str) -> str:
         flags=re.IGNORECASE | re.MULTILINE,
     )
     return hashlib.sha256(token.encode(encoding="utf-8")).hexdigest()
+
+
+def _parse_env_flag(varname: str = "CI", default: bool = False) -> bool:
+    """Parse environment variable as a flag for injected plugin config"""
+
+    value: str = os.getenv(varname)
+
+    if value is None:
+        return default
+
+    value = value.strip()
+
+    if value.isnumeric():
+        return bool(int(value))
+    else:
+        return value.lower() == "true"
+
+
+@dataclass
+class PluginEntry:
+    """Used for injecting plugins"""
+
+    name: str
+    scope: str = None
+    config: dict = None
+
+
+WANTED_PLUGINS: tuple[PluginEntry] = (
+    PluginEntry("nype_tweaks", scope="nype"),
+    PluginEntry(
+        "minify_html",
+        config={
+            "enabled": _parse_env_flag(),
+            "keep_html_and_head_opening_tags": True,
+            "keep_closing_tags": True,
+        },
+    ),
+)
+"""Tuple of wanted PluginEntries. Scope can be None. Config can be None to use defaults."""
 
 
 if __name__ == "mkdocs_nype":
