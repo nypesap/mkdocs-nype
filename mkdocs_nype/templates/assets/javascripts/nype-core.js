@@ -212,21 +212,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const eventHandler = (e) => {
-        e.preventDefault();
         const el = e.target;
 
         if (el.tagName !== "SUMMARY") {
             return;
         }
 
-        const details = el.closest("details");
+        e.preventDefault();
 
-        if (details.open === false) {
-            for (const faq of faqDetails) {
-                faq.open = faq === details;
+        const selectedFaq = el.closest("details");
+
+        if (selectedFaq.open === false) {
+            const wrapper = el.closest(".nype-faq");
+            const faqInSection = !!wrapper ? wrapper.querySelectorAll("details.faq") : faqDetails;
+            for (const faq of faqInSection) {
+                faq.open = faq === selectedFaq;
+                if (faq.open) {
+                    faq.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
             }
         } else {
-            details.open = false;
+            selectedFaq.open = false;
         }
     };
 
