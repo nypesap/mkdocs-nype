@@ -129,6 +129,24 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
 
         LOG.info("Tweaks initialized")
 
+    def on_files(self, files: Files, /, *, config: MkDocsConfig):
+        # Remove empty files from the Files structure
+        for path in list(config.extra_javascript):
+            file = files.get_file_from_path(path)
+
+            with open(file.abs_src_path, encoding="utf-8-sig") as handle:
+                content_lines = handle.readlines()
+
+            for line in content_lines:
+                line = line.strip()
+                if not line or line.startswith("//"):
+                    continue
+                break
+            else:
+                LOG.info(f"Excluding '{path}' file, because it is empty")
+                files.remove(file)
+                config.extra_javascript.remove(path)
+
     def on_env(
         self, env: macros_module.Environment, /, *, config: MkDocsConfig, files: Files
     ) -> macros_module.Environment | None:
