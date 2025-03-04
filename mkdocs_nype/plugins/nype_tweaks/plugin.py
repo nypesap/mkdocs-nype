@@ -49,6 +49,7 @@ the copyright.html template.
 MIT License 2024 Kamil Krzyśków (HRY) for Nype (npe.cm)
 """
 
+import datetime
 import logging
 import os
 import sys
@@ -121,6 +122,10 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
             config.theme["icon"]["tag"]["default"] = "material/tag"
         if not config.extra.get("tags"):
             config.extra["tags"] = {"_": "_"}
+
+        # Set current year in copyright tweak
+        year: str = str(datetime.datetime.now().year)
+        config.copyright = config.copyright.format(year=year)
 
         LOG.info("Tweaks initialized")
 
