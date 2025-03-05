@@ -93,4 +93,16 @@ jobs:
           script_after: |
             export SSH_TARGET=${{ secrets.SSH_TARGET }}
             ${{ secrets.SSH_COMMAND }}
-      
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  backup:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy backup to GitHub Pages
+        uses: actions/deploy-pages@v4
