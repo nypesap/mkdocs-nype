@@ -466,6 +466,12 @@
     transition: transform .75s cubic-bezier(.075, .85, .175, 1), opacity .75s;
 }
 
+@media screen and (max-width: 55em) {
+    .nype-exploded-cards > ul > li {
+        max-width: initial;
+    }
+}
+
 .nype-exploded-card-icon .twemoji {
     all: revert !important;
 }
