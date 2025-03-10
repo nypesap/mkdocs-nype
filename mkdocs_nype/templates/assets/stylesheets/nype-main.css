@@ -448,6 +448,7 @@
 
 .nype-exploded-cards > ul li {
     margin-left: 0 !important;
+    max-width: 50%;
 }
 
 .nype-exploded-cards > ul {
