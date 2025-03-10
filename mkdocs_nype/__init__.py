@@ -216,6 +216,7 @@ WANTED_PLUGINS: tuple[PluginEntry] = (
             "keep_closing_tags": True,
         },
     ),
+    PluginEntry("webp_images", scope="nype"),
 )
 """Tuple of wanted PluginEntries. Scope can be None. Config can be None to use defaults."""
 
