@@ -22,7 +22,13 @@ from urllib.parse import urlsplit
 from mkdocs.plugins import BasePlugin, PrefixedLogger, event_priority
 from mkdocs.structure import pages
 from mkdocs.structure.files import File
+from mkdocs.utils import normalize_url, templates
 from PIL import Image
+
+try:
+    from jinja2 import pass_context as contextfilter  # type: ignore
+except ImportError:
+    from jinja2 import contextfilter  # type: ignore
 
 from .config import WebpImagesConfig
 
@@ -76,6 +82,7 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
         pages._RelativePathTreeprocessor.path_to_url = wrap_path_to_url(
             pages._RelativePathTreeprocessor.path_to_url, extensions=self.extensions
         )
+        templates.url_filter = wrap_url_filter(templates.url_filter, extensions=self.extensions)
 
     # Allow to inject files with other plugins
     @event_priority(-25)
@@ -172,6 +179,7 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
 
 
 def wrap_path_to_url(func, *, extensions):
+    """Wrap path_to_url logic to swap in WebP paths"""
 
     if func.__name__ == "wrapper":
         return func
@@ -179,13 +187,34 @@ def wrap_path_to_url(func, *, extensions):
     extensions = tuple(extensions)
 
     def wrapper(self, url: str):
-        if url.endswith(extensions):
+        if url and url.endswith(extensions):
             scheme, netloc, path, query, anchor = urlsplit(url)
             # Hack the output to point at the converted file
             if not (scheme or netloc):
                 return func(self, url).rsplit(".", maxsplit=1)[0] + ".webp"
 
         return func(self, url)
+
+    return wrapper
+
+
+def wrap_url_filter(func, *, extensions):
+    """Wrap url_filter logic to swap in WebP paths"""
+
+    if func.__name__ == "wrapper":
+        return func
+
+    extensions = tuple(extensions)
+
+    @contextfilter
+    def wrapper(context: templates.TemplateContext, value: str):
+        if value and value.endswith(extensions):
+            scheme, netloc, path, query, anchor = urlsplit(value)
+            # Hack the output to point at the converted file
+            if not (scheme or netloc):
+                return func(context, value).rsplit(".", maxsplit=1)[0] + ".webp"
+
+        return func(context, value)
 
     return wrapper
 
