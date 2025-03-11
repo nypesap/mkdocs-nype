@@ -11,6 +11,7 @@ Parts adapted based on:
 MIT License Kamil Krzyśków (HRY) for Nype (npe.cm) and Fiori Tracker (fioritracker.org)
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -22,7 +23,7 @@ from urllib.parse import urlsplit
 from mkdocs.plugins import BasePlugin, PrefixedLogger, event_priority
 from mkdocs.structure import pages
 from mkdocs.structure.files import File
-from mkdocs.utils import normalize_url, templates
+from mkdocs.utils import templates
 from PIL import Image
 
 try:
@@ -40,12 +41,14 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
         self.promises: list[Future] = []
 
         self.extensions: list[str] = None
-        self.old_new_webp_map: dict[str, str] = {}
         self.old_file_map: dict[str, File] = {}
+
+        self.cache_index: dict[str, str] = {}
+        self.processed_hashes: set[str] = set()
+        self.cache_index_file: Path = None
 
         self.cache_base: Path = None
         self.cache_image_base: Path = None
-        self.cached_mapping_file: Path = None
         self.site_dir_path: Path = None
 
     def on_config(self, config):
@@ -63,7 +66,8 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
         assert self.extensions, "file extensions weren't loaded"
 
         # Clear between server runs because images could change
-        self.old_new_webp_map.clear()
+        self.cache_index.clear()
+        self.processed_hashes.clear()
         self.old_file_map.clear()
         self.promises.clear()
 
@@ -74,8 +78,7 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
         if self.config.cache:
             lossless: str = "lossless-" if self.config.lossless else ""
             self.cache_base = Path(config.config_file_path).parent / self.config.cache_dir
-            self.cached_mapping_file = self.cache_base / "map.json"
-
+            self.cache_index_file = self.cache_base / "index.json"
             self.cache_image_base = self.cache_base / "images" / f"{lossless}{self.config.quality}"
 
         # Wrap the path resolution logic to easily proxy webp files
@@ -87,6 +90,11 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
     # Allow to inject files with other plugins
     @event_priority(-25)
     def on_files(self, files, /, *, config):
+        # Load cached file hashes
+        if self.config.cache and self.cache_index_file.exists():
+            with open(self.cache_index_file, encoding="utf-8") as file:
+                self.cache_index.update(json.load(file))
+
         # Gather all conversion paths
         for file in list(files):
             path: Path = Path(file.src_path)
@@ -100,8 +108,11 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             if files.get_file_from_path(new):
                 continue
 
-            # Store posix relative paths for cache to be OS agnostic
-            self.old_new_webp_map[old] = new
+            # Setup future promise
+            src: str = file.abs_src_path
+            dest = self.site_dir_path / new
+            cached = (self.cache_image_base / new) if self.config.cache else None
+            self.promises.append(self.executor.submit(self._convert_image, src, dest, cached, new))
 
             # Store file separately, because we remove the old files
             self.old_file_map[old] = file
@@ -114,43 +125,27 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             # files.remove(file)
             # files.append(File.generated(config, new, abs_src_path=str(self.site_dir_path / new)))
 
-        # Load cached mapping to prevent processing the
-        cached_mapping: dict[str, str] = {}
-        if self.config.cache:
-            if self.cached_mapping_file.exists():
-                cached_mapping.update(
-                    json.loads(self.cached_mapping_file.read_text(encoding="utf-8"))
-                )
+    def _convert_image(self, src: str, dest: Path, cache_dest: Path | None, name: str):
+        dest.parent.mkdir(parents=True, exist_ok=True)
 
-        # Remove obsolete cached files
-        for old, obsolete_new in cached_mapping.items():
-            if old in self.old_new_webp_map:
-                continue
-            obsolete_cached_file = self.cache_image_base / obsolete_new
-            if obsolete_cached_file.exists():
-                obsolete_cached_file.unlink()
+        # Check if there is a cached entry for the given source hash
+        cached_entry = None
+        if cache_dest:
+            image_hash = get_image_hash_key(src)
+            self.processed_hashes.add(image_hash)
+            cached_entry = self.cache_index.get(image_hash)
 
-        for old, new in self.old_new_webp_map.items():
-            src: str = self.old_file_map[old].abs_src_path
-            target = self.site_dir_path / new
-            cached_target = (self.cache_image_base / new) if self.config.cache else None
-            self.promises.append(
-                self.executor.submit(self._convert_image, src, target, cached_target)
-            )
-
-    def _convert_image(self, src: str, target: Path, cached_target: Path | None):
-        target.parent.mkdir(parents=True, exist_ok=True)
-
-        if cached_target and cached_target.exists():
-            shutil.copyfile(cached_target, target)
+        if cached_entry == name and cache_dest.exists():
+            shutil.copyfile(cache_dest, dest)
             return
 
         with Image.open(src) as image:
-            image.save(target, lossless=self.config.lossless, quality=self.config.quality)
+            image.save(dest, lossless=self.config.lossless, quality=self.config.quality)
 
-        if cached_target:
-            cached_target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(target, cached_target)
+        if cache_dest:
+            self.cache_index[image_hash] = name
+            cache_dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(dest, cache_dest)
 
     def on_post_build(self, *, config):
         for promise in self.promises:
@@ -169,13 +164,38 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
         for file in self.old_file_map.values():
             os.remove(file.abs_dest_path)
 
+        # Clean up obsolete caches
+        for cached_hash in list(self.cache_index):
+            if cached_hash in self.processed_hashes:
+                continue
+
+            cached_path = self.cache_index.pop(cached_hash)
+            for path in self.cache_index.values():
+                if cached_path == path:
+                    break
+            else:
+                LOG.debug(f"Removing '{cached_path}' from cache")
+                (self.cache_image_base / cached_path).unlink()
+
         if self.config.cache:
-            with open(self.cached_mapping_file, "w", encoding="utf-8") as file:
-                json.dump(self.old_new_webp_map, file, sort_keys=True, ensure_ascii=False, indent=2)
+            with open(self.cache_index_file, "w", encoding="utf-8") as file:
+                json.dump(self.cache_index, file, ensure_ascii=False, indent=2)
 
     def on_shutdown(self):
         if self.executor is not None:
             self.executor.shutdown(wait=False, cancel_futures=True)
+
+
+def get_image_hash_key(src: str, algo: str = "sha256", chunk_size=4096):
+    """Load the file via stream and calculate hash during the process"""
+
+    calculated_hash = hashlib.new(algo)
+
+    with open(src, "rb") as file:
+        for chunk in iter(lambda: file.read(chunk_size), b""):
+            calculated_hash.update(chunk)
+
+    return calculated_hash.hexdigest()
 
 
 def wrap_path_to_url(func, *, extensions):
