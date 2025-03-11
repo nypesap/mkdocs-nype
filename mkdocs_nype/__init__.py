@@ -221,7 +221,7 @@ WANTED_PLUGINS: tuple[PluginEntry] = (
         "webp_images",
         scope="nype",
         config={
-            "enabled": not _parse_env_flag(),
+            "enabled": _parse_env_flag(),
             "ignore_paths": dedent(
                 """
                 /*png
