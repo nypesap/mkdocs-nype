@@ -34,6 +34,7 @@ import os
 import re
 from collections import Counter
 from dataclasses import dataclass
+from textwrap import dedent
 
 import mkdocs
 from mkdocs.config.base import ValidationError
@@ -216,7 +217,18 @@ WANTED_PLUGINS: tuple[PluginEntry] = (
             "keep_closing_tags": True,
         },
     ),
-    PluginEntry("webp_images", scope="nype", config={"enabled": _parse_env_flag()}),
+    PluginEntry(
+        "webp_images",
+        scope="nype",
+        config={
+            "enabled": not _parse_env_flag(),
+            "ignore_paths": dedent(
+                """
+                /*png
+                """.strip()
+            ),
+        },
+    ),
 )
 """Tuple of wanted PluginEntries. Scope can be None. Config can be None to use defaults."""
 

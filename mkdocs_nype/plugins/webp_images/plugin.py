@@ -95,6 +95,10 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             with open(self.cache_index_file, encoding="utf-8") as file:
                 self.cache_index.update(json.load(file))
 
+        ignore_processing: bool = (
+            self.config.ignore_paths and self.config.ignore_mode == "processing"
+        )
+
         # Gather all conversion paths
         for file in list(files):
             path: Path = Path(file.src_path)
@@ -103,6 +107,10 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
 
             old: str = path.as_posix()
             new: str = path.with_suffix(".webp").as_posix()
+
+            if ignore_processing and self.config.ignore_paths.match_file(old):
+                LOG.debug(f"Skipped processing of '{old}'")
+                continue
 
             # Skip if sibling webp exists
             if files.get_file_from_path(new):
@@ -161,7 +169,11 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
 
         # Clean the old images after the build to not copy them for deployment
         # TODO See note in on_files
+        ignore_deletion: bool = self.config.ignore_paths and self.config.ignore_mode == "deletion"
         for file in self.old_file_map.values():
+            if ignore_deletion and self.config.ignore_paths.match_file(file.src_uri):
+                LOG.debug(f"Skipped deletion of '{file.src_uri}'")
+                continue
             os.remove(file.abs_dest_path)
 
         # Clean up obsolete caches

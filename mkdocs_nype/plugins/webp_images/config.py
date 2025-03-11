@@ -1,7 +1,7 @@
 import os
 
 from mkdocs.config import Config
-from mkdocs.config.config_options import Type
+from mkdocs.config.config_options import Choice, Optional, PathSpec, Type
 
 
 class WebpImagesConfig(Config):
@@ -23,3 +23,9 @@ class WebpImagesConfig(Config):
 
     extensions = Type(str, default="jpg,jpeg,png,bmp")
     """Comma separated string list of image extensions to convert to WebP"""
+
+    ignore_paths = Optional(PathSpec())
+    """Ignored .gitignore patterns"""
+
+    ignore_mode = Choice(("processing", "deletion"), default="deletion")
+    """Ignore mode to decide if the ignored patterns should prevent processing or deletion of old images"""

@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mkdocs-nype"
-version = "0.24.0"
+version = "0.25.0"
 description = "MkDocs theme for Nype MkDocs projects, extends the Material for MkDocs theme"
 authors = [
     { name = "Kamil Krzyśków", email = "kk@npe.cm" }
