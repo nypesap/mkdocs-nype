@@ -44,7 +44,7 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
         self.old_file_map: dict[str, File] = {}
 
         self.cache_index: dict[str, str] = {}
-        self.processed_hashes: set[str] = set()
+        self.processed_images: set[str] = set()
         self.cache_index_file: Path = None
 
         self.cache_base: Path = None
@@ -67,7 +67,7 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
 
         # Clear between server runs because images could change
         self.cache_index.clear()
-        self.processed_hashes.clear()
+        self.processed_images.clear()
         self.old_file_map.clear()
         self.promises.clear()
 
@@ -135,15 +135,16 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
 
     def _convert_image(self, src: str, dest: Path, cache_dest: Path | None, name: str):
         dest.parent.mkdir(parents=True, exist_ok=True)
+        self.processed_images.add(name)
 
         # Check if there is a cached entry for the given source hash
-        cached_entry = None
+        cached_entry = False
         if cache_dest:
             image_hash = get_image_hash_key(src)
-            self.processed_hashes.add(image_hash)
-            cached_entry = self.cache_index.get(image_hash)
+            cached_hash = self.cache_index.get(name)
+            cached_entry = cached_hash == image_hash
 
-        if cached_entry == name and cache_dest.exists():
+        if cached_entry and cache_dest.exists():
             shutil.copyfile(cache_dest, dest)
             return
 
@@ -151,9 +152,9 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             image.save(dest, lossless=self.config.lossless, quality=self.config.quality)
 
         if cache_dest:
-            self.cache_index[image_hash] = name
             cache_dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(dest, cache_dest)
+            self.cache_index[name] = image_hash
 
     def on_post_build(self, *, config):
         for promise in self.promises:
@@ -177,17 +178,16 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             os.remove(file.abs_dest_path)
 
         # Clean up obsolete caches
-        for cached_hash in list(self.cache_index):
-            if cached_hash in self.processed_hashes:
+        for cached_path in list(self.cache_index):
+            if cached_path in self.processed_images:
                 continue
 
-            cached_path = self.cache_index.pop(cached_hash)
-            for path in self.cache_index.values():
-                if cached_path == path:
-                    break
-            else:
+            self.cache_index.pop(cached_path)
+
+            cached_path = self.cache_image_base / cached_path
+            if cached_path.exists():
                 LOG.debug(f"Removing '{cached_path}' from cache")
-                (self.cache_image_base / cached_path).unlink()
+                cached_path.unlink()
 
         if self.config.cache:
             with open(self.cache_index_file, "w", encoding="utf-8") as file:
