@@ -29,3 +29,6 @@ class WebpImagesConfig(Config):
 
     ignore_mode = Choice(("processing", "deletion"), default="deletion")
     """Ignore mode to decide if the ignored patterns should prevent processing or deletion of old images"""
+
+    add_sizes = Type(bool, default=True)
+    """Add sizes (width/height) to `<img>` tags"""

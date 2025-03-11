@@ -19,6 +19,7 @@ import shutil
 from concurrent.futures import Future, ThreadPoolExecutor, thread
 from pathlib import Path
 from urllib.parse import urlsplit
+from xml.etree import ElementTree as etree
 
 from mkdocs.plugins import BasePlugin, PrefixedLogger, event_priority
 from mkdocs.structure import pages
@@ -86,6 +87,11 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             pages._RelativePathTreeprocessor.path_to_url, extensions=self.extensions
         )
         templates.url_filter = wrap_url_filter(templates.url_filter, extensions=self.extensions)
+
+        if self.config.add_sizes:
+            pages._RelativePathTreeprocessor.run = wrap_run(
+                pages._RelativePathTreeprocessor.run, extensions=self.extensions
+            )
 
     # Allow to inject files with other plugins
     @event_priority(-25)
@@ -211,15 +217,16 @@ def get_image_hash_key(src: str, algo: str = "sha256", chunk_size=4096):
 
 
 def wrap_path_to_url(func, *, extensions):
-    """Wrap path_to_url logic to swap in WebP paths"""
+    """Wrap mkdocs.structure.pages._RelativePathTreeprocessor.path_to_url logic to swap in WebP paths"""
 
     if func.__name__ == "wrapper":
         return func
 
     extensions = tuple(extensions)
 
-    def wrapper(self, url: str):
-        if url and url.endswith(extensions):
+    # url is assured in the `run` method
+    def wrapper(self: pages._RelativePathTreeprocessor, url: str):
+        if url.endswith(extensions):
             scheme, netloc, path, query, anchor = urlsplit(url)
             # Hack the output to point at the converted file
             if not (scheme or netloc):
@@ -231,7 +238,7 @@ def wrap_path_to_url(func, *, extensions):
 
 
 def wrap_url_filter(func, *, extensions):
-    """Wrap url_filter logic to swap in WebP paths"""
+    """Wrap mkdocs.utils.templates.url_filter logic to swap in WebP paths"""
 
     if func.__name__ == "wrapper":
         return func
@@ -247,6 +254,49 @@ def wrap_url_filter(func, *, extensions):
                 return func(context, value).rsplit(".", maxsplit=1)[0] + ".webp"
 
         return func(context, value)
+
+    return wrapper
+
+
+def wrap_run(func, *, extensions):
+    """Wrap mkdocs.structure.pages._RelativePathTreeprocessor.run logic to swap in WebP paths"""
+
+    if func.__name__ == "wrapper":
+        return func
+
+    extensions = tuple(extensions)
+
+    # The run method runs before the `path_to_url`` method, so it operates on the old image url.
+    # The old image url is relative as input in the docs file, so it has to be resolved with
+    # the private `_target_uri` method.
+    # TODO At this point the files are guaranteed to exist in Files, because they're not removed.
+    # Read note in `on_files`. In case of removal the `_convert_image` function could also extract
+    # the sizes, instead of doing it here. However, doing it here is also performant, because the
+    # sizes are read from metadata headers.
+    def wrapper(self: pages._RelativePathTreeprocessor, root: etree.Element):
+        for element in root.iter():
+            if element.tag == "img":
+                key = "src"
+            else:
+                continue
+
+            url = element.get(key)
+
+            assert url is not None
+            if not url.endswith(extensions):
+                continue
+
+            scheme, netloc, path, query, anchor = urlsplit(url)
+            if scheme or netloc:
+                continue
+
+            file = self.files.get_file_from_path(self._target_uri(self.file.src_uri, path))
+
+            with Image.open(file.abs_src_path) as image:
+                element.set("height", str(image.height))
+                element.set("width", str(image.width))
+
+        return func(self, root)
 
     return wrapper
 
