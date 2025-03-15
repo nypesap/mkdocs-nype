@@ -46,7 +46,6 @@ requiring the development workflow to pass :v:
 
 ## Deployment
 
-Any push to the `dev` branch will also deploy these docs. As for the downstream projects, there is
-typically no need to update them to the latest version of the theme, so there is no automatic "deploy all"
-workflow yet. Sometimes a bug could impact all of the downstream projects, therefore such workflow will be
-added sooner or later :v: For now rerun the deploy action in the downstream project's CI or make a change.
+Any push to the `dev` branch will also deploy these docs. As for the downstream projects, after the `dev`
+changes get merged into `main` a workflow will dispatch the `theme-dispatch` event to downstream projects 
+1-by-1 to avoid excessive server load.
