@@ -19,16 +19,22 @@ jobs:
       fail-fast: true
       matrix:
         repo:
-          - 'fioriroletesting/fioriroletesting.github.io'
-          - 'fioriappsusage/fioriappsusage.github.io'
+          - handle: 'fioriroletesting/fioriroletesting.github.io'
+            isLast: false
+          - handle: 'fioriappsusage/fioriappsusage.github.io'
+            isLast: false
+          - handle: 'Fiori-Tracker/fiori-tracker.github.io'
+            isLast: false
+          - handle: 'nypesap/nypesap.github.io'
+            isLast: true
     steps:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PUBLIC_REPOS_NYPE_DISPATCH }}
-          repository: ${{ matrix.repo }}
+          repository: ${{ matrix.repo.handle }}
           event-type: theme-dispatch
       - name: Wait a bit
+        if: ${{ !matrix.repo.isLast }}
         # Limit the load of the VPS server
-        if: matrix.repo != strategy.matrix.repo[-1]
         run: sleep 30
