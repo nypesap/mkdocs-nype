@@ -18,7 +18,9 @@ jobs:
       # If one deployment failed then don't try another
       fail-fast: true
       matrix:
-        repo: ['fioriroletesting/fioriroletesting.github.io']
+        repo:
+          - 'fioriroletesting/fioriroletesting.github.io'
+          - 'fioriappsusage/fioriappsusage.github.io'
     steps:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
@@ -26,3 +28,7 @@ jobs:
           token: ${{ secrets.PUBLIC_REPOS_NYPE_DISPATCH }}
           repository: ${{ matrix.repo }}
           event-type: theme-dispatch
+      - name: Wait a bit
+        # Limit the load of the VPS server
+        if: matrix.repo != strategy.matrix.repo[-1]
+        run: sleep 30
