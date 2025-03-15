@@ -1,0 +1,28 @@
+name: ci 
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    strategy:
+      # Limit the load of the VPS server
+      max-parallel: 1
+      # If one deployment failed then don't try another
+      fail-fast: true
+      matrix:
+        repo: ['fioriroletesting/fioriroletesting.github.io']
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PUBLIC_REPOS_NYPE_DISPATCH }}
+          repository: ${{ matrix.repo }}
+          event-type: theme-dispatch
