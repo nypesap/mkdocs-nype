@@ -1,9 +1,10 @@
 """MkDocs plugin to convert images to WebP format
 
-This plugin converts images concurrently and recursively to not block the main thread and injects the
-web image path during Markdown path validation / resolution to not parse HTML output with regex.
+This plugin converts images concurrently to not block the main thread and injects the web image
+path during Markdown path validation / resolution to not parse HTML output with regex.
 
 Parts adapted based on:
+
 - https://github.com/mur4d1n-lib/mkdocs-images-to-webp by mur4d1n (MIT)
 - https://github.com/squidfunk/mkdocs-material/tree/master/material/plugins/social by squidfunk (MIT)
 - https://gitlab.com/Shoun2137/ztexipy by Shoun2137 (GPLv3)
@@ -94,7 +95,8 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
             )
 
     # Allow to inject files with other plugins
-    @event_priority(-25)
+    # Blog plugin runs on -50
+    @event_priority(-75)
     def on_files(self, files, /, *, config):
         # Load cached file hashes
         if self.config.cache and self.cache_index_file.exists():
@@ -107,7 +109,8 @@ class WebpImagesPlugin(BasePlugin[WebpImagesConfig]):
 
         # Gather all conversion paths
         for file in list(files):
-            path: Path = Path(file.src_path)
+            # Use dest_path to support blog /posts prefix removal
+            path: Path = Path(file.dest_path)
             if path.suffix.lower() not in self.extensions:
                 continue
 
