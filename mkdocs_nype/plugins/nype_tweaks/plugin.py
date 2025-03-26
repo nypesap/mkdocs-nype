@@ -149,6 +149,10 @@ class NypeTweaksPlugin(BasePlugin[NypeTweaksConfig]):
         for path in list(config.extra_javascript):
             file = files.get_file_from_path(path)
 
+            if file is None:
+                LOG.debug(f"Skipped None path {path}")
+                continue
+
             with open(file.abs_src_path, encoding="utf-8-sig") as handle:
                 content_lines = handle.readlines()
 
