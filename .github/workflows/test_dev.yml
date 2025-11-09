@@ -20,7 +20,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3
+          python-version: 3.13
           cache: pip
       - name: Install style-check deps
         run: python .github/scripts/install_dev_deps.py
@@ -38,7 +38,7 @@ jobs:
         id: install-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3
+          python-version: 3.13
           cache: pip
       - name: Process Python Cache
         id: cache-requirements
@@ -83,7 +83,7 @@ jobs:
         id: install-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3
+          python-version: 3.13
           cache: pip
       - name: Process Python Cache
         id: cache-requirements
@@ -114,7 +114,7 @@ jobs:
         id: install-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3
+          python-version: 3.13
           cache: pip
       - name: Process Python Cache
         id: cache-requirements
