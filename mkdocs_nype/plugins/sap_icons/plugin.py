@@ -243,9 +243,10 @@ WEEK: int = dt.datetime.now(dt.timezone.utc).isocalendar().week
 """Integer with the week value from ISO calendar"""
 
 ICON_JSONS_URLS: list[str] = [
-    "https://raw.githubusercontent.com/SAP/ui5-webcomponents/main/packages/icons/src/v5/SAP-icons.json"
+    "https://raw.githubusercontent.com/SAP/ui5-webcomponents/v2.20.3/packages/icons/src/v5/SAP-icons.json"
 ]
 """List with links to JSON files that contain SVG icon paths"""
+# hotfix: was changed from main to v2.20.3 as one SAP icon got invalid in more recent version
 
 ICON_INDEXES: list[dict[str, dict]] = []
 """Global list to store the indexes, filled later in event"""
